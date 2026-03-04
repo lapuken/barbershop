@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Shop Selector{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+    <h1 class="h3">Shop Selector</h1>
+    <p class="text-muted">Choose the branch context used by the dashboard, forms, and reports.</p>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% include "includes/form_fields.html" with form=form %}
+            <button class="btn btn-primary" type="submit">Switch Shop</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

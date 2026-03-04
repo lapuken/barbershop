@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Edit Appointment{% else %}Add Appointment{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+    <span class="eyebrow">Schedule</span>
+    <h1>{% if object %}Edit Appointment{% else %}Add Appointment{% endif %}</h1>
+    <p class="text-muted mb-0">Book services, confirm requests, and keep the barber schedule current.</p>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% include "includes/form_fields.html" with form=form %}
+            <button class="btn btn-primary" type="submit">Save Appointment</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

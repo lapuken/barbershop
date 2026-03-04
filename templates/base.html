@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Smart Barber Shops{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body class="app-shell">
+{% if user.is_authenticated %}
+{% with namespace=request.resolver_match.namespace url_name=request.resolver_match.url_name %}
+<div class="container-fluid">
+    <div class="row min-vh-100">
+        <aside class="col-12 col-xl-3 col-xxl-2 sidebar p-4 p-lg-4">
+            <a class="brand text-decoration-none" href="{% url 'core:dashboard' %}">Smart Barber Shops</a>
+            <div class="sidebar-kicker mt-4">Workspace</div>
+            <nav class="nav flex-column gap-2 mt-2">
+                <a class="nav-link {% if namespace == 'core' and url_name == 'dashboard' %}active{% endif %}" href="{% url 'core:dashboard' %}">Dashboard</a>
+                {% if user.role == "platform_admin" %}
+                <a class="nav-link {% if namespace == 'shops' %}active{% endif %}" href="{% url 'shops:list' %}">Shops</a>
+                {% endif %}
+                <a class="nav-link {% if namespace == 'accounts' and url_name == 'shop_selector' %}active{% endif %}" href="{% url 'accounts:shop_selector' %}">Shop Selector</a>
+                <a class="nav-link {% if namespace == 'appointments' and 'customer' in url_name %}active{% endif %}" href="{% url 'appointments:customers' %}">Customers</a>
+                <a class="nav-link {% if namespace == 'appointments' and 'customer' not in url_name %}active{% endif %}" href="{% url 'appointments:list' %}">Appointments</a>
+                <a class="nav-link {% if namespace == 'barbers' %}active{% endif %}" href="{% url 'barbers:list' %}">Barbers</a>
+                <a class="nav-link {% if namespace == 'products' %}active{% endif %}" href="{% url 'products:list' %}">Products</a>
+                <a class="nav-link {% if namespace == 'sales' %}active{% endif %}" href="{% url 'sales:list' %}">Sales</a>
+                <a class="nav-link {% if namespace == 'expenses' %}active{% endif %}" href="{% url 'expenses:list' %}">Expenses</a>
+                <a class="nav-link {% if namespace == 'reports' %}active{% endif %}" href="{% url 'reports:dashboard' %}">Reports</a>
+                <a class="nav-link {% if namespace == 'audit' %}active{% endif %}" href="{% url 'audit:list' %}">Audit</a>
+                <a class="nav-link {% if namespace == 'core' and url_name == 'settings' %}active{% endif %}" href="{% url 'core:settings' %}">Settings</a>
+            </nav>
+            <div class="shop-chip mt-4">
+                <div class="small text-uppercase text-muted">Active Shop</div>
+                <div class="fw-semibold">{{ current_shop.name|default:"All accessible shops" }}</div>
+                {% if current_shop %}
+                <div class="text-muted small">{{ current_shop.branch_code }}</div>
+                {% endif %}
+            </div>
+            <div class="sidebar-user mt-auto pt-4">
+                <div class="small sidebar-user-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="text-muted small">{{ user.get_role_display }}</div>
+                <form method="post" action="{% url 'accounts:logout' %}" class="mt-3">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-light btn-sm w-100" type="submit">Logout</button>
+                </form>
+            </div>
+        </aside>
+        <main class="col-12 col-xl-9 col-xxl-10">
+            <div class="content-shell px-3 px-lg-5 py-4 py-lg-5">
+                {% include "includes/messages.html" %}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+</div>
+{% endwith %}
+{% else %}
+<main class="auth-shell">
+    {% include "includes/messages.html" %}
+    {% block auth_content %}{% endblock %}
+</main>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="/static/js/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

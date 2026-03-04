@@ -1,0 +1,81 @@
+{% load app_extras %}
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Client Book</span>
+        <h1>Customers</h1>
+        <p class="text-muted mb-0">Track repeat clients, contact details, and booking-ready customer records.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'appointments:customer-create' %}">New Customer</a>
+</div>
+<div class="section-card">
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-3 filter-toolbar">
+            <div class="col-lg-5">
+                <label class="filter-label" for="customer-search">Search</label>
+                <input class="form-control" id="customer-search" type="search" name="q" value="{{ request.GET.q }}" placeholder="Search by customer name">
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <button class="btn btn-outline-primary w-100" type="submit">Filter</button>
+            </div>
+            {% if request.GET.q %}
+            <div class="col-sm-6 col-lg-2">
+                <a class="btn btn-outline-secondary w-100" href="{% url 'appointments:customers' %}">Clear</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+    <div class="table-responsive table-shell">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Customer</th><th>Contact</th><th>Shop</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+                {% for customer in customers %}
+                <tr>
+                    <td>
+                        <div class="entity-name">{{ customer.full_name }}</div>
+                        {% if customer.notes %}
+                        <div class="entity-meta">{{ customer.notes|truncatechars:60 }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div>{{ customer.phone|default:"No phone" }}</div>
+                        <div class="entity-meta">{{ customer.email|default:"No email" }}</div>
+                    </td>
+                    <td>
+                        <div class="entity-name">{{ customer.shop.name }}</div>
+                        <div class="entity-meta">{{ customer.shop.branch_code }}</div>
+                    </td>
+                    <td>
+                        <span class="status-pill {% if customer.is_active %}active{% else %}inactive{% endif %}">
+                            {% if customer.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </td>
+                    <td class="text-end">
+                        <div class="action-stack">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'appointments:customer-edit' customer.pk %}">Edit</a>
+                            {% with share=customer_share_links|get_item:customer.id %}
+                            {% if share.whatsapp %}
+                            <a class="btn btn-sm btn-outline-success" href="{{ share.whatsapp }}" target="_blank" rel="noreferrer">WhatsApp</a>
+                            {% endif %}
+                            {% if share.telegram %}
+                            <a class="btn btn-sm btn-outline-secondary" href="{{ share.telegram }}" target="_blank" rel="noreferrer">Telegram</a>
+                            {% endif %}
+                            {% endwith %}
+                            <form method="post" action="{% url 'appointments:customer-delete' customer.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Archive</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-4">No customers found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

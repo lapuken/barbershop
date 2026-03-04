@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Booking Submitted{% endblock %}
+{% block auth_content %}
+<section class="booking-shell">
+    <div class="booking-card card shadow-sm border-0">
+        <div class="card-body p-4 p-lg-5 text-center">
+            <span class="eyebrow">Online Booking</span>
+            <h1 class="h2 mb-3">Booking request submitted</h1>
+            <p class="text-muted mb-4">The shop can now confirm your appointment and contact you using the details you provided.</p>
+            <div class="d-flex justify-content-center flex-wrap gap-2">
+                <a class="btn btn-primary" href="{% url 'appointments:public-book' %}">Book Another Visit</a>
+                <a class="btn btn-outline-primary" href="{% url 'appointments:public-availability' %}">View Available Schedules</a>
+                <a class="btn btn-outline-secondary" href="{% url 'accounts:login' %}">Staff Login</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

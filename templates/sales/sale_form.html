@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Sale Form{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+    <h1 class="h3">{% if sale and sale.pk %}Edit Daily Sale{% else %}Create Daily Sale{% endif %}</h1>
+    <p class="text-muted mb-0">Duplicate barber/shop/date submissions will redirect to the existing sale instead of creating a second record.</p>
+</div>
+<form method="post">
+    {% csrf_token %}
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            {% include "includes/form_fields.html" with form=form %}
+        </div>
+    </div>
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0">Sale Items</h2>
+                <button class="btn btn-outline-primary btn-sm" type="button" id="add-sale-item">Add Item</button>
+            </div>
+            {{ formset.management_form }}
+            {% for error in formset.non_form_errors %}
+            <div class="alert alert-danger">{{ error }}</div>
+            {% endfor %}
+            <div id="sale-items">
+                {% for item_form in formset %}
+                <div class="sale-item row g-3 border rounded p-3 mb-3">
+                    {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+                    <div class="col-md-2">{{ item_form.item_type.label_tag }}{{ item_form.item_type }}</div>
+                    <div class="col-md-3">{{ item_form.product.label_tag }}{{ item_form.product }}</div>
+                    <div class="col-md-3">{{ item_form.item_name_snapshot.label_tag }}{{ item_form.item_name_snapshot }}</div>
+                    <div class="col-md-2">{{ item_form.unit_price_snapshot.label_tag }}{{ item_form.unit_price_snapshot }}</div>
+                    <div class="col-md-1">{{ item_form.quantity.label_tag }}{{ item_form.quantity }}</div>
+                    <div class="col-md-1">{{ item_form.DELETE.label_tag }}{{ item_form.DELETE }}</div>
+                    {% for field in item_form.visible_fields %}
+                        {% for error in field.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-primary mt-4" type="submit">Save Sale</button>
+</form>
+<template id="empty-sale-item">
+    <div class="sale-item row g-3 border rounded p-3 mb-3">
+        {{ formset.empty_form.id }}
+        <div class="col-md-2">{{ formset.empty_form.item_type.label_tag }}{{ formset.empty_form.item_type }}</div>
+        <div class="col-md-3">{{ formset.empty_form.product.label_tag }}{{ formset.empty_form.product }}</div>
+        <div class="col-md-3">{{ formset.empty_form.item_name_snapshot.label_tag }}{{ formset.empty_form.item_name_snapshot }}</div>
+        <div class="col-md-2">{{ formset.empty_form.unit_price_snapshot.label_tag }}{{ formset.empty_form.unit_price_snapshot }}</div>
+        <div class="col-md-1">{{ formset.empty_form.quantity.label_tag }}{{ formset.empty_form.quantity }}</div>
+        <div class="col-md-1">{{ formset.empty_form.DELETE.label_tag }}{{ formset.empty_form.DELETE }}</div>
+    </div>
+</template>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById("add-sale-item")?.addEventListener("click", function () {
+    const totalForms = document.getElementById("id_items-TOTAL_FORMS");
+    const index = Number(totalForms.value);
+    const html = document.getElementById("empty-sale-item").innerHTML.replaceAll("__prefix__", index);
+    document.getElementById("sale-items").insertAdjacentHTML("beforeend", html);
+    totalForms.value = index + 1;
+});
+</script>
+{% endblock %}

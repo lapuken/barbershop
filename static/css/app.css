@@ -1,0 +1,312 @@
+:root {
+    --brand-900: #0f172a;
+    --brand-700: #1d3557;
+    --brand-500: #457b9d;
+    --accent: #f4a261;
+    --surface: #f8fafc;
+    --ink: #132238;
+    --line: rgba(19, 34, 56, 0.1);
+}
+
+body {
+    background:
+        radial-gradient(circle at top left, rgba(244, 162, 97, 0.18), transparent 35%),
+        linear-gradient(135deg, #eff6ff 0%, #f8fafc 40%, #fef3c7 100%);
+    color: var(--ink);
+    font-family: "Segoe UI", sans-serif;
+    line-height: 1.5;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, var(--brand-900), var(--brand-700));
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    min-height: 100vh;
+}
+
+.sidebar .nav-link,
+.sidebar .brand {
+    color: rgba(255, 255, 255, 0.88);
+}
+
+.sidebar .text-muted {
+    color: rgba(226, 232, 240, 0.65) !important;
+}
+
+.sidebar-kicker {
+    color: rgba(226, 232, 240, 0.45);
+    font-size: 0.75rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+}
+
+.sidebar .nav-link {
+    border-radius: 1rem;
+    font-weight: 600;
+    padding: 0.8rem 1rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.sidebar .nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(2px);
+}
+
+.sidebar .nav-link.active {
+    background: linear-gradient(135deg, rgba(244, 162, 97, 0.22), rgba(69, 123, 157, 0.28));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.brand {
+    display: inline-block;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    max-width: 7rem;
+    line-height: 1.15;
+}
+
+.metric-card {
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: blur(10px);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: 0 0.75rem 2rem rgba(15, 23, 42, 0.08);
+}
+
+.metric-card span {
+    color: #64748b;
+    display: block;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+}
+
+.metric-card strong {
+    display: block;
+    font-size: 1.9rem;
+}
+
+.metric-card-accent {
+    background: linear-gradient(135deg, var(--brand-700), var(--accent));
+    color: #fff;
+}
+
+.metric-card-accent span {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.report-chip,
+.shop-chip {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 1rem;
+    padding: 1rem;
+}
+
+.content-shell {
+    margin: 0 auto;
+    max-width: 1440px;
+}
+
+.page-header {
+    animation: rise-in 0.4s ease-out;
+}
+
+.page-header .eyebrow {
+    color: #64748b;
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    margin-bottom: 0.6rem;
+    text-transform: uppercase;
+}
+
+.page-header h1 {
+    font-size: clamp(2rem, 3vw, 3.25rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    margin-bottom: 0.5rem;
+}
+
+.section-card {
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 1.4rem;
+    box-shadow: 0 1.2rem 3rem rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+}
+
+.filter-toolbar {
+    align-items: end;
+}
+
+.filter-label {
+    color: #475569;
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 0.45rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.table-shell .table {
+    margin-bottom: 0;
+}
+
+.table-shell thead th {
+    background: rgba(255, 255, 255, 0.68);
+    border-bottom-color: var(--line);
+    color: #0f172a;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    padding: 1.1rem 1rem;
+    text-transform: uppercase;
+}
+
+.table-shell tbody td {
+    border-bottom-color: var(--line);
+    padding: 1.15rem 1rem;
+    vertical-align: middle;
+}
+
+.table-shell tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.entity-name {
+    color: #0f172a;
+    font-size: 1.02rem;
+    font-weight: 700;
+}
+
+.entity-meta {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-top: 0.15rem;
+}
+
+.status-pill {
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.4rem 0.8rem;
+}
+
+.status-pill.active {
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+}
+
+.status-pill.inactive {
+    background: rgba(148, 163, 184, 0.15);
+    color: #475569;
+}
+
+.action-stack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.sidebar-user {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-user-name {
+    color: #fff;
+    font-weight: 700;
+}
+
+.login-card {
+    max-width: 480px;
+    margin: 10vh auto;
+}
+
+.booking-shell {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.booking-card {
+    max-width: 720px;
+    margin: 4rem auto;
+    width: 100%;
+}
+
+.status-pill.requested {
+    background: rgba(245, 158, 11, 0.12);
+    color: #b45309;
+}
+
+.status-pill.confirmed {
+    background: rgba(59, 130, 246, 0.12);
+    color: #1d4ed8;
+}
+
+.status-pill.completed {
+    background: rgba(16, 185, 129, 0.12);
+    color: #047857;
+}
+
+.status-pill.cancelled,
+.status-pill.no_show {
+    background: rgba(239, 68, 68, 0.1);
+    color: #b91c1c;
+}
+
+.auth-shell {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 2rem;
+}
+
+@keyframes rise-in {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (max-width: 1199.98px) {
+    .sidebar {
+        min-height: auto;
+        position: static;
+    }
+
+    .brand {
+        font-size: 1.9rem;
+        max-width: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .table-shell thead th,
+    .table-shell tbody td {
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+
+    .action-stack {
+        justify-content: flex-start;
+    }
+}

@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+    <h1 class="h3 mb-1">Reports & Intelligence</h1>
+    <p class="text-muted mb-0">Traceable operational summaries anchored to the underlying sale and expense records.</p>
+</div>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            {% include "includes/form_fields.html" with form=filter_form %}
+            <div class="col-12"><button class="btn btn-outline-primary" type="submit">Apply Filters</button></div>
+        </form>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-3"><div class="metric-card"><span>Daily Sales</span><strong>{{ daily.total_sales }}</strong></div></div>
+    <div class="col-md-3"><div class="metric-card"><span>Weekly Sales</span><strong>{{ weekly.total_sales }}</strong></div></div>
+    <div class="col-md-3"><div class="metric-card"><span>Monthly Sales</span><strong>{{ monthly.total_sales }}</strong></div></div>
+    <div class="col-md-3"><div class="metric-card metric-card-accent"><span>Net Revenue</span><strong>{{ net_revenue.net_revenue }}</strong></div></div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Top Barbers</h2>
+                <table class="table table-sm">
+                    <thead><tr><th>Barber</th><th>Revenue</th><th>Commission</th></tr></thead>
+                    <tbody>
+                        {% for row in top_barbers %}
+                        <tr><td>{{ row.barber__full_name }}</td><td>{{ row.revenue }}</td><td>{{ row.commissions }}</td></tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-muted">No data</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Expense Summary</h2>
+                <table class="table table-sm">
+                    <thead><tr><th>Category</th><th>Total</th></tr></thead>
+                    <tbody>
+                        {% for row in expenses.results %}
+                        <tr><td>{{ row.category }}</td><td>{{ row.total }}</td></tr>
+                        {% empty %}
+                        <tr><td colspan="2" class="text-muted">No expenses</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Shop Comparison</h2>
+                <table class="table table-sm">
+                    <thead><tr><th>Shop</th><th>Sales</th><th>Commissions</th></tr></thead>
+                    <tbody>
+                        {% for row in shop_comparison %}
+                        <tr><td>{{ row.shop__name }}</td><td>{{ row.total_sales }}</td><td>{{ row.total_commissions }}</td></tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-muted">No comparison data</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Product Performance</h2>
+                <table class="table table-sm">
+                    <thead><tr><th>Item</th><th>Qty</th><th>Revenue</th></tr></thead>
+                    <tbody>
+                        {% for row in product_performance %}
+                        <tr><td>{{ row.item_name_snapshot }}</td><td>{{ row.quantity_sold }}</td><td>{{ row.revenue }}</td></tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-muted">No product data</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

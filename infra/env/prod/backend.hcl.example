@@ -1,0 +1,4 @@
+resource_group_name  = "tfstate-rg"
+storage_account_name = "tfstateshared001"
+container_name       = "tfstate"
+key                  = "smartbarbershops/prod/terraform.tfstate"

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+    <h1 class="h3 mb-1">Settings</h1>
+    <p class="text-muted mb-0">Operational configuration, security baseline notes, and environment references.</p>
+</div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Account & Access</h2>
+                <p>Role: <strong>{{ request.user.get_role_display }}</strong></p>
+                <p>Current shop: <strong>{{ current_shop.name|default:"None selected" }}</strong></p>
+                <a class="btn btn-outline-primary" href="{% url 'accounts:shop_selector' %}">Switch Shop</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Security Baseline</h2>
+                <ul class="mb-0">
+                    <li>Session-based authentication with CSRF protection.</li>
+                    <li>Rate-limited login workflow and audit/security event logging.</li>
+                    <li>Shop-scoped query filtering across UI and API paths.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

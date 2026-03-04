@@ -1,0 +1,38 @@
+subscription_id                = "00000000-0000-0000-0000-000000000000"
+tenant_id                      = "00000000-0000-0000-0000-000000000000"
+project_name                   = "smartbarbershops"
+environment                    = "prod"
+github_environment             = "prod"
+github_repository              = "your-org/smart-barber-shops"
+name_suffix                    = "p01"
+location                       = "eastus2"
+owner                          = "platform-team"
+team                           = "smart-barber"
+cost_center                    = "cc-001"
+acr_sku                        = "Standard"
+log_analytics_retention_days   = 60
+key_vault_purge_protection_enabled = true
+postgres_sku_name              = "GP_Standard_D2s_v3"
+postgres_storage_mb            = 65536
+postgres_backup_retention_days = 14
+postgres_zone                  = "1"
+postgres_database_name         = "smart_barber_shops"
+postgres_public_network_access_enabled = true
+container_image                = "smartbarbershopsprod.azurecr.io/smartbarber/web:bootstrap"
+app_release_sha                = "bootstrap"
+container_app_target_port      = 8000
+container_app_allow_insecure_connections = false
+container_app_external_enabled = true
+container_app_min_replicas     = 2
+container_app_max_replicas     = 5
+container_app_cpu              = 1
+container_app_memory           = "2Gi"
+django_allowed_hosts = [
+  "smartbarbershops.example.com",
+]
+django_csrf_trusted_origins = [
+  "https://smartbarbershops.example.com",
+]
+additional_tags = {
+  service_tier = "production"
+}

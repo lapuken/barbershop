@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Sales{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Operations</span>
+        <h1>Daily Sales</h1>
+        <p class="text-muted mb-0">One sale record per barber, shop, and date with immutable item snapshots.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'sales:create' %}">New Sale</a>
+</div>
+<div class="section-card">
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-3 filter-toolbar">
+            <div class="col-md-4 col-lg-3">
+                <label class="filter-label" for="sale-date-filter">Sale Date</label>
+                <input class="form-control" id="sale-date-filter" type="date" name="sale_date" value="{{ request.GET.sale_date }}">
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <button class="btn btn-outline-primary w-100" type="submit">Filter</button>
+            </div>
+            {% if request.GET.sale_date %}
+            <div class="col-sm-6 col-lg-2">
+                <a class="btn btn-outline-secondary w-100" href="{% url 'sales:list' %}">Clear</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+    <div class="table-responsive table-shell">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Sale Date</th><th>Barber</th><th>Shop</th><th>Total</th><th>Commission</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+                {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.sale_date }}</td>
+                    <td>
+                        <div class="entity-name">{{ sale.barber.full_name }}</div>
+                        <div class="entity-meta">{{ sale.notes|default:"No notes"|truncatechars:60 }}</div>
+                    </td>
+                    <td>
+                        <div class="entity-name">{{ sale.shop.name }}</div>
+                        <div class="entity-meta">{{ sale.shop.branch_code }}</div>
+                    </td>
+                    <td>{{ sale.total_amount|floatformat:2 }}</td>
+                    <td>{{ sale.commission_amount|floatformat:2 }}</td>
+                    <td class="text-end">
+                        <div class="action-stack">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'sales:edit' sale.pk %}">Edit</a>
+                            <form method="post" action="{% url 'sales:delete' sale.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Archive</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">No sales recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

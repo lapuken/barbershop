@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <h1 class="h3 mb-1">Operations Dashboard</h1>
+        <p class="text-muted mb-0">Daily visibility across sales, expenses, commissions, bookings, and shop activity.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'appointments:create' %}">Book Appointment</a>
+        <a class="btn btn-primary" href="{% url 'sales:create' %}">Record Daily Sale</a>
+    </div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-6 col-xl-3"><div class="metric-card"><span>Sales Today</span><strong>{{ dashboard.today.total_sales }}</strong></div></div>
+    <div class="col-md-6 col-xl-3"><div class="metric-card"><span>Expenses Today</span><strong>{{ dashboard.today.total_expenses }}</strong></div></div>
+    <div class="col-md-6 col-xl-3"><div class="metric-card"><span>Commissions Today</span><strong>{{ dashboard.today.total_commissions }}</strong></div></div>
+    <div class="col-md-6 col-xl-3"><div class="metric-card metric-card-accent"><span>Net Revenue Today</span><strong>{{ dashboard.today.net_revenue }}</strong></div></div>
+</div>
+<div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="metric-card"><span>Appointments Today</span><strong>{{ appointment_metrics.today_total }}</strong></div></div>
+    <div class="col-md-4"><div class="metric-card"><span>Confirmed Today</span><strong>{{ appointment_metrics.today_confirmed }}</strong></div></div>
+    <div class="col-md-4"><div class="metric-card"><span>Requests Waiting</span><strong>{{ appointment_metrics.today_requested }}</strong></div></div>
+</div>
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Performance Windows</h2>
+                <div class="row g-3 mt-1">
+                    <div class="col-md-6">
+                        <div class="p-3 rounded report-chip">
+                            <div class="text-muted small text-uppercase">This Week</div>
+                            <div class="fs-4 fw-semibold">{{ dashboard.weekly.total_sales }}</div>
+                            <div class="small">Net: {{ dashboard.weekly.net_revenue }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 rounded report-chip">
+                            <div class="text-muted small text-uppercase">This Month</div>
+                            <div class="fs-4 fw-semibold">{{ dashboard.monthly.total_sales }}</div>
+                            <div class="small">Net: {{ dashboard.monthly.net_revenue }}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h3 class="h6">Top Barber Today</h3>
+                    {% if dashboard.top_barber %}
+                    <div class="fw-semibold">{{ dashboard.top_barber.name }}</div>
+                    <div class="text-muted">{{ dashboard.top_barber.revenue }}</div>
+                    {% else %}
+                    <div class="text-muted">No sales recorded today.</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <h2 class="h5">Upcoming Appointments</h2>
+                <div class="list-group list-group-flush">
+                    {% for appointment in upcoming_appointments %}
+                    <div class="list-group-item px-0">
+                        <div class="fw-semibold">{{ appointment.customer.full_name }} · {{ appointment.service_name }}</div>
+                        <div class="small text-muted">
+                            {{ appointment.scheduled_start|date:"M j, g:i A" }}
+                            {% if appointment.barber %} with {{ appointment.barber.full_name }}{% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted">No upcoming appointments scheduled.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row g-4 mt-1">
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <h2 class="h5">Recent Activity</h2>
+                <div class="list-group list-group-flush">
+                    {% for item in recent_activity %}
+                    <div class="list-group-item px-0">
+                        <div class="fw-semibold">{{ item.event_type|title }} {{ item.entity_type }}</div>
+                        <div class="small text-muted">{{ item.created_at }}{% if item.actor %} by {{ item.actor.username }}{% endif %}</div>
+                    </div>
+                    {% empty %}
+                    <div class="text-muted">No recent activity logged.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

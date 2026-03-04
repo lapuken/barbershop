@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Book an Appointment{% endblock %}
+{% block auth_content %}
+<section class="booking-shell">
+    <div class="booking-card card shadow-sm border-0">
+        <div class="card-body p-4 p-lg-5">
+            <span class="eyebrow">Online Booking</span>
+            <h1 class="h2 mb-2">Book your next barber visit</h1>
+            <p class="text-muted mb-4">Choose a shop, request a time, and leave contact details so the team can confirm your slot.</p>
+            {% if availability_url %}
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                <a class="btn btn-outline-primary" href="{{ availability_url }}">View Available Schedules</a>
+                {% if shop_whatsapp_url %}
+                <a class="btn btn-success" href="{{ shop_whatsapp_url }}" target="_blank" rel="noreferrer">WhatsApp Shop</a>
+                {% endif %}
+                {% if shop_telegram_url %}
+                <a class="btn btn-outline-secondary" href="{{ shop_telegram_url }}" target="_blank" rel="noreferrer">Telegram Shop</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            <form method="post">
+                {% csrf_token %}
+                {% include "includes/form_fields.html" with form=form %}
+                <button class="btn btn-primary w-100" type="submit">Submit Booking Request</button>
+            </form>
+            <div class="mt-4 d-flex justify-content-between flex-wrap gap-2">
+                <a href="{% url 'accounts:login' %}">Staff login</a>
+                <span class="text-muted small">Booking requests are stored as pending until confirmed by the shop.</span>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

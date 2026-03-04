@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{% if object %}Edit Customer{% else %}Add Customer{% endif %}{% endblock %}
+{% block content %}
+<div class="page-header mb-4">
+    <span class="eyebrow">Client Book</span>
+    <h1>{% if object %}Edit Customer{% else %}Add Customer{% endif %}</h1>
+    <p class="text-muted mb-0">Maintain customer identity and contact details for booking and follow-up.</p>
+</div>
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% include "includes/form_fields.html" with form=form %}
+            <button class="btn btn-primary" type="submit">Save Customer</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

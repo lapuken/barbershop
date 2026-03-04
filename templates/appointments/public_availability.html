@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Available Schedules{% endblock %}
+{% block auth_content %}
+<section class="booking-shell">
+    <div class="booking-card card shadow-sm border-0">
+        <div class="card-body p-4 p-lg-5">
+            <span class="eyebrow">Availability</span>
+            <h1 class="h2 mb-2">Available schedules</h1>
+            <p class="text-muted mb-4">Review upcoming open slots by barber, then book online or message the shop through WhatsApp or Telegram.</p>
+            <form method="get" class="row g-3 align-items-end mb-4">
+                <div class="col-lg-6">
+                    <label class="form-label" for="shop-select">Shop</label>
+                    <select class="form-control" id="shop-select" name="shop">
+                        {% for shop in shops %}
+                        <option value="{{ shop.id }}"{% if selected_shop and selected_shop.id == shop.id %} selected{% endif %}>{{ shop.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-lg-3">
+                    <button class="btn btn-outline-primary w-100" type="submit">Refresh</button>
+                </div>
+                {% if booking_url %}
+                <div class="col-lg-3">
+                    <a class="btn btn-primary w-100" href="{{ booking_url }}">Book Online</a>
+                </div>
+                {% endif %}
+            </form>
+
+            {% if selected_shop %}
+            <div class="d-flex flex-wrap gap-2 mb-4">
+                {% if availability_whatsapp_share_url %}
+                <a class="btn btn-success" href="{{ availability_whatsapp_share_url }}" target="_blank" rel="noreferrer">Send Availability via WhatsApp</a>
+                {% endif %}
+                {% if shop_whatsapp_url %}
+                <a class="btn btn-success" href="{{ shop_whatsapp_url }}" target="_blank" rel="noreferrer">WhatsApp Shop</a>
+                {% endif %}
+                {% if shop_telegram_url %}
+                <a class="btn btn-outline-primary" href="{{ shop_telegram_url }}" target="_blank" rel="noreferrer">Telegram Shop</a>
+                {% endif %}
+                {% if availability_telegram_share_url %}
+                <a class="btn btn-outline-secondary" href="{{ availability_telegram_share_url }}" target="_blank" rel="noreferrer">Share via Telegram</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="row g-3">
+                {% for group in availability_groups %}
+                <div class="col-md-6">
+                    <div class="section-card h-100">
+                        <div class="card-body">
+                            <h2 class="h5 mb-3">{{ group.barber.full_name }}</h2>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for slot in group.slots %}
+                                <span class="badge text-bg-light px-3 py-2">{{ slot|date:"D, M j g:i A" }}</span>
+                                {% empty %}
+                                <span class="text-muted">No open slots found in the current window.</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="col-12">
+                    <div class="text-muted">No active barbers or available slots found.</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

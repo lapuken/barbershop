@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+        <span class="eyebrow">Inventory</span>
+        <h1>Products</h1>
+        <p class="text-muted mb-0">Track branch inventory, pricing, and product performance.</p>
+    </div>
+    <a class="btn btn-primary" href="{% url 'products:create' %}">New Product</a>
+</div>
+<div class="section-card">
+    <div class="card-body border-bottom">
+        <form method="get" class="row g-3 filter-toolbar">
+            <div class="col-lg-5">
+                <label class="filter-label" for="product-search">Search</label>
+                <input class="form-control" id="product-search" type="search" name="q" value="{{ request.GET.q }}" placeholder="Search by product name, SKU, or category">
+            </div>
+            <div class="col-sm-6 col-lg-2">
+                <button class="btn btn-outline-primary w-100" type="submit">Filter</button>
+            </div>
+            {% if request.GET.q %}
+            <div class="col-sm-6 col-lg-2">
+                <a class="btn btn-outline-secondary w-100" href="{% url 'products:list' %}">Clear</a>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+    <div class="table-responsive table-shell">
+        <table class="table table-hover align-middle mb-0">
+            <thead><tr><th>Product</th><th>Shop</th><th>Category</th><th>Sale Price</th><th class="text-end">Actions</th></tr></thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td>
+                        <div class="entity-name">{{ product.name }}</div>
+                        <div class="entity-meta">SKU {{ product.sku }}</div>
+                    </td>
+                    <td>
+                        <div class="entity-name">{{ product.shop.name }}</div>
+                        <div class="entity-meta">{{ product.shop.branch_code }}</div>
+                    </td>
+                    <td>{{ product.category }}</td>
+                    <td>{{ product.sale_price|floatformat:2 }}</td>
+                    <td class="text-end">
+                        <div class="action-stack">
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'products:edit' product.pk %}">Edit</a>
+                            <form method="post" action="{% url 'products:delete' product.pk %}" class="d-inline">
+                                {% csrf_token %}
+                                <button class="btn btn-sm btn-outline-danger" type="submit">Archive</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">No products found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% include "includes/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,37 @@
+subscription_id              = "00000000-0000-0000-0000-000000000000"
+tenant_id                    = "00000000-0000-0000-0000-000000000000"
+project_name                 = "smartbarbershops"
+environment                  = "dev"
+github_environment           = "dev"
+github_repository            = "your-org/smart-barber-shops"
+name_suffix                  = "d01"
+location                     = "eastus"
+owner                        = "platform-team"
+team                         = "smart-barber"
+cost_center                  = "cc-001"
+acr_sku                      = "Basic"
+log_analytics_retention_days = 30
+postgres_sku_name            = "B_Standard_B1ms"
+postgres_storage_mb          = 32768
+postgres_backup_retention_days = 7
+postgres_zone                = "1"
+postgres_database_name       = "smart_barber_shops"
+postgres_public_network_access_enabled = true
+container_image              = "smartbarbershopsdev.azurecr.io/smartbarber/web:bootstrap"
+app_release_sha              = "bootstrap"
+container_app_target_port    = 8000
+container_app_allow_insecure_connections = false
+container_app_external_enabled = true
+container_app_min_replicas   = 1
+container_app_max_replicas   = 2
+container_app_cpu            = 0.5
+container_app_memory         = "1Gi"
+django_allowed_hosts = [
+  "smartbarbershops-dev.example.com",
+]
+django_csrf_trusted_origins = [
+  "https://smartbarbershops-dev.example.com",
+]
+additional_tags = {
+  service_tier = "dev"
+}

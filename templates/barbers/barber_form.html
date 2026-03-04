@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Barber Form{% endblock %}
+{% block content %}
+<div class="page-header mb-4"><h1 class="h3">{% if object %}Edit Barber{% else %}Add Barber{% endif %}</h1></div>
+<div class="card border-0 shadow-sm">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% include "includes/form_fields.html" with form=form %}
+            <button class="btn btn-primary" type="submit">Save Barber</button>
+        </form>
+    </div>
+</div>
+{% endblock %}
