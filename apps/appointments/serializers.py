@@ -2,6 +2,7 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
 from apps.appointments.models import Appointment, Customer
+from apps.appointments.notifications import send_booking_confirmation
 from apps.barbers.models import Barber
 from apps.shops.models import Shop
 
@@ -25,6 +26,8 @@ class CustomerSerializer(serializers.ModelSerializer):
             "full_name",
             "phone",
             "email",
+            "telegram_chat_id",
+            "preferred_confirmation_channel",
             "notes",
             "is_active",
             "created_at",
@@ -71,15 +74,21 @@ class AppointmentSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        return Appointment.objects.create(**validated_data, created_by=user, updated_by=user)
+        appointment = Appointment.objects.create(**validated_data, created_by=user, updated_by=user)
+        if appointment.status == Appointment.Status.CONFIRMED:
+            send_booking_confirmation(appointment, request=self.context.get("request"))
+        return appointment
 
     def update(self, instance, validated_data):
         user = self.context["request"].user
+        previous_status = instance.status
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.updated_by = user
         instance.full_clean()
         instance.save()
+        if previous_status != Appointment.Status.CONFIRMED and instance.status == Appointment.Status.CONFIRMED:
+            send_booking_confirmation(instance, request=self.context.get("request"))
         return instance
 
 
@@ -88,6 +97,12 @@ class PublicBookingSerializer(serializers.Serializer):
     customer_name = serializers.CharField(max_length=255)
     phone = serializers.CharField(max_length=32, allow_blank=True, required=False)
     email = serializers.EmailField(required=False, allow_blank=True)
+    telegram_chat_id = serializers.CharField(max_length=64, allow_blank=True, required=False)
+    preferred_confirmation_channel = serializers.ChoiceField(
+        choices=Customer.ConfirmationChannel.choices,
+        required=False,
+        default=Customer.ConfirmationChannel.AUTO,
+    )
     barber = serializers.PrimaryKeyRelatedField(
         queryset=Barber.objects.filter(is_active=True),
         required=False,
@@ -99,16 +114,31 @@ class PublicBookingSerializer(serializers.Serializer):
     notes = serializers.CharField(allow_blank=True, required=False)
 
     def validate(self, attrs):
-        if not attrs.get("phone") and not attrs.get("email"):
+        if not attrs.get("phone") and not attrs.get("email") and not attrs.get("telegram_chat_id"):
             raise serializers.ValidationError(
                 {
                     "non_field_errors": [
                         (
-                            "Provide at least a phone number or email address so "
-                            "the shop can confirm your booking."
+                            "Provide at least a phone number, email address, or Telegram chat ID "
+                            "so the shop can confirm your booking."
                         )
                     ]
                 }
+            )
+        preferred_channel = attrs.get(
+            "preferred_confirmation_channel",
+            Customer.ConfirmationChannel.AUTO,
+        )
+        if preferred_channel == Customer.ConfirmationChannel.WHATSAPP and not attrs.get("phone"):
+            raise serializers.ValidationError(
+                {"phone": ["A phone number is required for WhatsApp confirmations."]}
+            )
+        if (
+            preferred_channel == Customer.ConfirmationChannel.TELEGRAM
+            and not attrs.get("telegram_chat_id")
+        ):
+            raise serializers.ValidationError(
+                {"telegram_chat_id": ["A Telegram chat ID is required for Telegram confirmations."]}
             )
         barber = attrs.get("barber")
         shop = attrs["shop"]

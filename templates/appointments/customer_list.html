@@ -1,5 +1,5 @@
-{% load app_extras %}
 {% extends "base.html" %}
+{% load app_extras %}
 {% block title %}Customers{% endblock %}
 {% block content %}
 <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
@@ -42,6 +42,9 @@
                     <td>
                         <div>{{ customer.phone|default:"No phone" }}</div>
                         <div class="entity-meta">{{ customer.email|default:"No email" }}</div>
+                        {% if customer.telegram_chat_id %}
+                        <div class="entity-meta">Telegram ID: {{ customer.telegram_chat_id }}</div>
+                        {% endif %}
                     </td>
                     <td>
                         <div class="entity-name">{{ customer.shop.name }}</div>
@@ -51,6 +54,7 @@
                         <span class="status-pill {% if customer.is_active %}active{% else %}inactive{% endif %}">
                             {% if customer.is_active %}Active{% else %}Inactive{% endif %}
                         </span>
+                        <div class="entity-meta mt-2">Confirm via {{ customer.get_preferred_confirmation_channel_display }}</div>
                     </td>
                     <td class="text-end">
                         <div class="action-stack">

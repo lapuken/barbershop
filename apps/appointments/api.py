@@ -103,6 +103,10 @@ class PublicBookingAPIView(APIView):
             customer_name=serializer.validated_data["customer_name"],
             phone=serializer.validated_data.get("phone", ""),
             email=serializer.validated_data.get("email", ""),
+            telegram_chat_id=serializer.validated_data.get("telegram_chat_id", ""),
+            preferred_confirmation_channel=serializer.validated_data.get(
+                "preferred_confirmation_channel"
+            ),
             barber=serializer.validated_data.get("barber"),
             service_name=serializer.validated_data["service_name"],
             scheduled_start=serializer.validated_data["scheduled_start"],

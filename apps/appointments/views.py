@@ -7,6 +7,7 @@ from django.views.generic import CreateView, FormView, ListView, TemplateView, U
 
 from apps.appointments.forms import AppointmentForm, CustomerForm, PublicBookingForm
 from apps.appointments.models import Appointment, Customer
+from apps.appointments.notifications import send_booking_confirmation
 from apps.appointments.services import available_slots_for_shop, create_public_booking
 from apps.appointments.sharing import (
     build_appointment_message,
@@ -149,8 +150,28 @@ class AppointmentCreateView(RoleRequiredMixin, ActiveShopRequiredMixin, CreateVi
     def form_valid(self, form):
         form.instance.created_by = self.request.user
         form.instance.updated_by = self.request.user
-        messages.success(self.request, "Appointment saved.")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if self.object.status == Appointment.Status.CONFIRMED:
+            result = send_booking_confirmation(self.object, request=self.request)
+            if result.sent:
+                messages.success(
+                    self.request,
+                    f"Appointment saved. Confirmation sent via {result.channel_label}.",
+                )
+            elif result.status == "failed":
+                messages.warning(
+                    self.request,
+                    "Appointment saved, but the booking confirmation could not be delivered.",
+                )
+            else:
+                messages.success(self.request, "Appointment saved.")
+                messages.warning(
+                    self.request,
+                    "Appointment saved, but no configured confirmation route was available.",
+                )
+        else:
+            messages.success(self.request, "Appointment saved.")
+        return response
 
 
 class AppointmentUpdateView(
@@ -172,9 +193,30 @@ class AppointmentUpdateView(
         return kwargs
 
     def form_valid(self, form):
+        previous_status = self.object.status
         form.instance.updated_by = self.request.user
-        messages.success(self.request, "Appointment updated.")
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        if previous_status != Appointment.Status.CONFIRMED and self.object.status == Appointment.Status.CONFIRMED:
+            result = send_booking_confirmation(self.object, request=self.request)
+            if result.sent:
+                messages.success(
+                    self.request,
+                    f"Appointment updated. Confirmation sent via {result.channel_label}.",
+                )
+            elif result.status == "failed":
+                messages.warning(
+                    self.request,
+                    "Appointment updated, but the booking confirmation could not be delivered.",
+                )
+            else:
+                messages.success(self.request, "Appointment updated.")
+                messages.warning(
+                    self.request,
+                    "Appointment updated, but no configured confirmation route was available.",
+                )
+        else:
+            messages.success(self.request, "Appointment updated.")
+        return response
 
 
 class AppointmentDeleteView(RoleRequiredMixin, ActiveShopRequiredMixin, View):
@@ -216,6 +258,10 @@ class PublicBookingView(FormView):
             customer_name=form.cleaned_data["customer_name"],
             phone=form.cleaned_data.get("phone", ""),
             email=form.cleaned_data.get("email", ""),
+            telegram_chat_id=form.cleaned_data.get("telegram_chat_id", ""),
+            preferred_confirmation_channel=form.cleaned_data.get(
+                "preferred_confirmation_channel"
+            ),
             barber=form.cleaned_data.get("barber"),
             service_name=form.cleaned_data["service_name"],
             scheduled_start=form.cleaned_data["scheduled_start"],

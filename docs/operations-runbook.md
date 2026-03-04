@@ -13,11 +13,14 @@
 
 ## Rotate a Secret
 
-### Django secret key or PostgreSQL password
+### Django secret key, PostgreSQL password, or messaging provider tokens
 
 1. Use [set-keyvault-secret.sh](/home/khido/projects/barbershop/scripts/azure/set-keyvault-secret.sh) or the Azure portal/CLI to write the new secret value into Key Vault.
 2. If rotating the PostgreSQL admin password, update the password on the PostgreSQL server first.
-3. Restart the Container App revision so the new secret version is resolved:
+3. For customer booking confirmations, the relevant Key Vault secret names are exposed through Terraform outputs:
+   - `telegram_bot_token`
+   - `whatsapp_access_token`
+4. Restart the Container App revision so the new secret version is resolved:
 
 ```bash
 az containerapp revision restart \
@@ -26,7 +29,21 @@ az containerapp revision restart \
   --revision <revision-name>
 ```
 
-4. Re-run the migration job if the password is used there as well.
+5. Re-run the migration job if the password is used there as well.
+
+## Enable WhatsApp or Telegram Booking Confirmations
+
+1. Apply Terraform so the Container App has the new secret references and runtime variables.
+2. Set the Key Vault placeholder secrets to their real provider values:
+
+```bash
+./scripts/azure/set-keyvault-secret.sh <key-vault-name> <telegram-bot-token-secret-name> <telegram-bot-token>
+./scripts/azure/set-keyvault-secret.sh <key-vault-name> <whatsapp-access-token-secret-name> <whatsapp-access-token>
+```
+
+3. Set `whatsapp_phone_number_id` in Terraform or the `TF_WHATSAPP_PHONE_NUMBER_ID` GitHub environment variable if WhatsApp delivery should be active.
+4. Restart the Container App revision so the updated secret versions are loaded.
+5. Create or confirm a test appointment and verify an `AppointmentNotification` record is written in Django admin.
 
 ## Run Migrations Manually
 

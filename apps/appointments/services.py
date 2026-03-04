@@ -68,19 +68,32 @@ def upcoming_appointments_for_user(user, shop=None, limit=8):
     )
 
 
-def get_or_create_customer_for_booking(*, shop, customer_name, phone="", email="", notes=""):
+def get_or_create_customer_for_booking(
+    *,
+    shop,
+    customer_name,
+    phone="",
+    email="",
+    telegram_chat_id="",
+    preferred_confirmation_channel=Customer.ConfirmationChannel.AUTO,
+    notes="",
+):
     queryset = Customer.objects.filter(shop=shop)
     customer = None
     if phone:
         customer = queryset.filter(phone=phone).first()
     if customer is None and email:
         customer = queryset.filter(email__iexact=email).first()
+    if customer is None and telegram_chat_id:
+        customer = queryset.filter(telegram_chat_id=telegram_chat_id).first()
     if customer is None:
         customer = Customer.objects.create(
             shop=shop,
             full_name=customer_name,
             phone=phone,
             email=email,
+            telegram_chat_id=telegram_chat_id,
+            preferred_confirmation_channel=preferred_confirmation_channel,
             notes=notes,
             is_active=True,
         )
@@ -92,6 +105,15 @@ def get_or_create_customer_for_booking(*, shop, customer_name, phone="", email="
         if email and customer.email != email:
             customer.email = email
             updates.append("email")
+        if telegram_chat_id and customer.telegram_chat_id != telegram_chat_id:
+            customer.telegram_chat_id = telegram_chat_id
+            updates.append("telegram_chat_id")
+        if (
+            preferred_confirmation_channel
+            and customer.preferred_confirmation_channel != preferred_confirmation_channel
+        ):
+            customer.preferred_confirmation_channel = preferred_confirmation_channel
+            updates.append("preferred_confirmation_channel")
         if notes and notes not in customer.notes:
             customer.notes = f"{customer.notes}\n{notes}".strip()
             updates.append("notes")
@@ -110,6 +132,8 @@ def create_public_booking(
     customer_name,
     phone="",
     email="",
+    telegram_chat_id="",
+    preferred_confirmation_channel=Customer.ConfirmationChannel.AUTO,
     barber=None,
     service_name,
     scheduled_start,
@@ -121,6 +145,8 @@ def create_public_booking(
         customer_name=customer_name,
         phone=phone,
         email=email,
+        telegram_chat_id=telegram_chat_id,
+        preferred_confirmation_channel=preferred_confirmation_channel,
         notes=notes,
     )
     appointment = Appointment(

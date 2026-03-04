@@ -2,16 +2,17 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from decimal import Decimal
+from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
+from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 from rest_framework.test import APIClient
 
 from apps.accounts.models import UserShopAccess
-from apps.appointments.models import Appointment, Customer
+from apps.appointments.models import Appointment, AppointmentNotification, Customer
 from apps.appointments.services import available_slots_for_shop
 from apps.appointments.sharing import (
     build_telegram_direct_url,
@@ -418,6 +419,59 @@ class CustomerAndAppointmentTests(BaseAppTestCase):
         self.assertEqual(appointment.status, Appointment.Status.CONFIRMED)
         self.assertEqual(appointment.booking_source, Appointment.BookingSource.STAFF)
 
+    @override_settings(
+        WHATSAPP_ACCESS_TOKEN="test-wa-token",
+        WHATSAPP_PHONE_NUMBER_ID="123456789",
+    )
+    @patch("apps.appointments.notifications._post_json")
+    def test_confirmed_appointment_sends_whatsapp_confirmation(self, post_json):
+        post_json.return_value = {"messages": [{"id": "wamid.123"}]}
+        self.login_api(self.manager)
+        response = self.api_client.post("/api/appointments/", self.appointment_payload(), format="json")
+        self.assertEqual(response.status_code, 201)
+        notification = AppointmentNotification.objects.get(appointment_id=response.data["id"])
+        self.assertEqual(notification.status, AppointmentNotification.Status.SENT)
+        self.assertEqual(notification.channel, AppointmentNotification.Channel.WHATSAPP)
+        self.assertEqual(notification.provider_message_id, "wamid.123")
+        post_json.assert_called_once()
+
+    @override_settings(TELEGRAM_BOT_TOKEN="test-telegram-token")
+    @patch("apps.appointments.notifications._post_json")
+    def test_confirming_requested_appointment_sends_telegram_confirmation(self, post_json):
+        post_json.return_value = {"ok": True, "result": {"message_id": 98765}}
+        telegram_customer = Customer.objects.create(
+            shop=self.shop1,
+            full_name="Telegram Client",
+            telegram_chat_id="99887766",
+            preferred_confirmation_channel=Customer.ConfirmationChannel.TELEGRAM,
+            is_active=True,
+        )
+        appointment = Appointment.objects.create(
+            shop=self.shop1,
+            customer=telegram_customer,
+            barber=self.barber,
+            service_name="Line Up",
+            scheduled_start=(timezone.now() + timedelta(days=1)).replace(second=0, microsecond=0),
+            duration_minutes=30,
+            expected_total=Decimal("20.00"),
+            status=Appointment.Status.REQUESTED,
+            booking_source=Appointment.BookingSource.ONLINE,
+            created_by=self.manager,
+            updated_by=self.manager,
+        )
+        self.login_api(self.manager)
+        response = self.api_client.patch(
+            f"/api/appointments/{appointment.id}/",
+            {"status": Appointment.Status.CONFIRMED},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        notification = AppointmentNotification.objects.get(appointment=appointment)
+        self.assertEqual(notification.status, AppointmentNotification.Status.SENT)
+        self.assertEqual(notification.channel, AppointmentNotification.Channel.TELEGRAM)
+        self.assertEqual(notification.provider_message_id, "98765")
+        post_json.assert_called_once()
+
     def test_overlapping_appointment_blocked(self):
         self.login_api(self.manager)
         start = (timezone.now() + timedelta(hours=4)).replace(second=0, microsecond=0)
@@ -451,6 +505,34 @@ class CustomerAndAppointmentTests(BaseAppTestCase):
         self.assertEqual(appointment.status, Appointment.Status.REQUESTED)
         self.assertEqual(appointment.booking_source, Appointment.BookingSource.ONLINE)
         self.assertEqual(appointment.customer.phone, "555-7755")
+
+    def test_public_booking_accepts_telegram_confirmation_details(self):
+        response = self.api_client.post(
+            "/api/public/bookings",
+            {
+                "shop": self.shop1.id,
+                "customer_name": "Telegram Lead",
+                "phone": "",
+                "email": "",
+                "telegram_chat_id": "44556677",
+                "preferred_confirmation_channel": Customer.ConfirmationChannel.TELEGRAM,
+                "barber": self.barber.id,
+                "service_name": "Shape Up",
+                "scheduled_start": (
+                    timezone.now() + timedelta(days=2)
+                ).replace(second=0, microsecond=0).isoformat(),
+                "duration_minutes": 30,
+                "notes": "Telegram only",
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 201)
+        appointment = Appointment.objects.get(pk=response.data["id"])
+        self.assertEqual(
+            appointment.customer.preferred_confirmation_channel,
+            Customer.ConfirmationChannel.TELEGRAM,
+        )
+        self.assertEqual(appointment.customer.telegram_chat_id, "44556677")
 
 
 class SalesTests(BaseAppTestCase):

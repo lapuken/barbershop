@@ -67,13 +67,16 @@ For the Docker pilot path, run this verifier before sharing the URL:
 
 4. Customer management
    - Create a customer with at least one contact method.
-   - Attempt customer creation without phone or email and confirm rejection.
+   - Attempt customer creation without phone, email, or Telegram chat ID and confirm rejection.
    - Confirm customer records stay scoped to the selected shop.
 
 5. Appointment workflow
    - Create an appointment for a valid customer and barber in the selected shop.
    - Attempt an overlapping appointment for the same barber and confirm rejection.
    - Submit a public booking request and confirm it lands as a `requested` appointment.
+   - Confirm a requested appointment and verify an `AppointmentNotification` record is written.
+   - With WhatsApp credentials configured, confirm a customer with a phone number receives a WhatsApp booking confirmation.
+   - With Telegram credentials configured, confirm a customer with a Telegram chat ID receives a Telegram booking confirmation.
    - Open the public availability page and confirm open slots are shown by barber.
    - Use WhatsApp and Telegram share actions from customer or appointment screens and confirm the generated messages include booking or availability details.
 

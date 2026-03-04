@@ -139,6 +139,7 @@ class Command(BaseCommand):
             defaults={
                 "full_name": "Nia Thompson",
                 "email": "nia@example.com",
+                "preferred_confirmation_channel": Customer.ConfirmationChannel.WHATSAPP,
                 "notes": "Usually books after work.",
             },
         )
@@ -148,6 +149,7 @@ class Command(BaseCommand):
             defaults={
                 "full_name": "Caleb Brooks",
                 "email": "caleb@example.com",
+                "preferred_confirmation_channel": Customer.ConfirmationChannel.WHATSAPP,
             },
         )
         customer_three, _ = Customer.objects.get_or_create(
@@ -156,6 +158,8 @@ class Command(BaseCommand):
             defaults={
                 "full_name": "Maya Ellis",
                 "email": "maya@example.com",
+                "telegram_chat_id": "998877665",
+                "preferred_confirmation_channel": Customer.ConfirmationChannel.TELEGRAM,
             },
         )
 

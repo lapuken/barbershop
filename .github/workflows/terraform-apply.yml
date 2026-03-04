@@ -49,6 +49,7 @@ jobs:
       TF_VAR_container_app_max_replicas: ${{ vars.TF_CONTAINER_APP_MAX_REPLICAS }}
       TF_VAR_container_app_cpu: ${{ vars.TF_CONTAINER_APP_CPU }}
       TF_VAR_container_app_memory: ${{ vars.TF_CONTAINER_APP_MEMORY }}
+      TF_VAR_whatsapp_phone_number_id: ${{ vars.TF_WHATSAPP_PHONE_NUMBER_ID }}
       TF_VAR_django_allowed_hosts: ${{ vars.TF_DJANGO_ALLOWED_HOSTS }}
       TF_VAR_django_csrf_trusted_origins: ${{ vars.TF_DJANGO_CSRF_TRUSTED_ORIGINS }}
     steps:

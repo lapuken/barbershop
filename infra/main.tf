@@ -101,6 +101,30 @@ resource "azurerm_key_vault_secret" "postgres_admin_password" {
   tags         = local.common_tags
 }
 
+resource "azurerm_key_vault_secret" "telegram_bot_token" {
+  name         = local.key_vault_secret_names.telegram_bot_token
+  value        = "configure-me"
+  key_vault_id = module.key_vault.id
+  content_type = "telegram-bot-token"
+  tags         = local.common_tags
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
+resource "azurerm_key_vault_secret" "whatsapp_access_token" {
+  name         = local.key_vault_secret_names.whatsapp_access_token
+  value        = "configure-me"
+  key_vault_id = module.key_vault.id
+  content_type = "whatsapp-access-token"
+  tags         = local.common_tags
+
+  lifecycle {
+    ignore_changes = [value]
+  }
+}
+
 module "postgres" {
   source = "./modules/postgres-flex"
 
@@ -161,6 +185,14 @@ module "container_app" {
       identity            = module.runtime_identity.id
       key_vault_secret_id = azurerm_key_vault_secret.postgres_admin_password.versionless_id
     }
+    telegram-bot-token = {
+      identity            = module.runtime_identity.id
+      key_vault_secret_id = azurerm_key_vault_secret.telegram_bot_token.versionless_id
+    }
+    whatsapp-access-token = {
+      identity            = module.runtime_identity.id
+      key_vault_secret_id = azurerm_key_vault_secret.whatsapp_access_token.versionless_id
+    }
   }
   command = []
   args    = []
@@ -191,6 +223,14 @@ module "migration_job" {
     postgres-password = {
       identity            = module.runtime_identity.id
       key_vault_secret_id = azurerm_key_vault_secret.postgres_admin_password.versionless_id
+    }
+    telegram-bot-token = {
+      identity            = module.runtime_identity.id
+      key_vault_secret_id = azurerm_key_vault_secret.telegram_bot_token.versionless_id
+    }
+    whatsapp-access-token = {
+      identity            = module.runtime_identity.id
+      key_vault_secret_id = azurerm_key_vault_secret.whatsapp_access_token.versionless_id
     }
   }
   command = ["/app/docker/start-migrate.sh"]

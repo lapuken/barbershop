@@ -65,6 +65,7 @@ container_app_min_replicas     = ${TF_VAR_container_app_min_replicas:-1}
 container_app_max_replicas     = ${TF_VAR_container_app_max_replicas:-3}
 container_app_cpu              = ${TF_VAR_container_app_cpu:-0.5}
 container_app_memory           = "${TF_VAR_container_app_memory:-1Gi}"
+whatsapp_phone_number_id       = "${TF_VAR_whatsapp_phone_number_id:-}"
 app_timezone                   = "${TF_VAR_app_timezone:-America/New_York}"
 session_cookie_age             = ${TF_VAR_session_cookie_age:-3600}
 login_rate_limit               = ${TF_VAR_login_rate_limit:-5}

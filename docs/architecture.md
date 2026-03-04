@@ -43,7 +43,7 @@ Core Azure resources per environment:
 
 - Container App and migration job use the runtime managed identity.
 - The runtime identity pulls images from ACR.
-- The runtime identity resolves `DJANGO_SECRET_KEY` and `POSTGRES_PASSWORD` from Key Vault.
+- The runtime identity resolves `DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD`, `TELEGRAM_BOT_TOKEN`, and `WHATSAPP_ACCESS_TOKEN` from Key Vault.
 
 ### Infrastructure Automation
 
@@ -62,6 +62,7 @@ Core Azure resources per environment:
 3. Secret environment variables reference named Container App secrets backed by Key Vault.
 4. At runtime, Azure resolves the secret values using the managed identity.
 5. The app exposes `/healthz/` for deployment verification.
+6. Appointment confirmation delivery uses non-secret runtime variables plus provider tokens from Key Vault.
 
 ## Release Sequence
 

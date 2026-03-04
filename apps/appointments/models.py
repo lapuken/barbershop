@@ -7,13 +7,24 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import Q
 
-from apps.core.models import ShopScopedModel, SoftDeleteModel
+from apps.core.models import ShopScopedModel, SoftDeleteModel, TimeStampedModel
 
 
 class Customer(ShopScopedModel, SoftDeleteModel):
+    class ConfirmationChannel(models.TextChoices):
+        AUTO = "auto", "Automatic"
+        WHATSAPP = "whatsapp", "WhatsApp"
+        TELEGRAM = "telegram", "Telegram"
+
     full_name = models.CharField(max_length=255)
     phone = models.CharField(max_length=32, blank=True)
     email = models.EmailField(blank=True)
+    telegram_chat_id = models.CharField(max_length=64, blank=True)
+    preferred_confirmation_channel = models.CharField(
+        max_length=32,
+        choices=ConfirmationChannel.choices,
+        default=ConfirmationChannel.AUTO,
+    )
     notes = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
 
@@ -30,16 +41,39 @@ class Customer(ShopScopedModel, SoftDeleteModel):
                 condition=Q(deleted_at__isnull=True) & ~Q(email=""),
                 name="uniq_customer_email_per_shop_active",
             ),
+            models.UniqueConstraint(
+                fields=["shop", "telegram_chat_id"],
+                condition=Q(deleted_at__isnull=True) & ~Q(telegram_chat_id=""),
+                name="uniq_customer_telegram_chat_id_per_shop_active",
+            ),
         ]
         indexes = [
             models.Index(fields=["shop", "full_name"]),
             models.Index(fields=["shop", "phone"]),
+            models.Index(fields=["shop", "telegram_chat_id"]),
             models.Index(fields=["shop", "is_active"]),
         ]
 
     def clean(self):
-        if not self.phone and not self.email:
-            raise ValidationError("Customer needs at least a phone number or email address.")
+        errors = {}
+        if not self.phone and not self.email and not self.telegram_chat_id:
+            errors["__all__"] = (
+                "Customer needs at least a phone number, email address, or Telegram chat ID."
+            )
+        if (
+            self.preferred_confirmation_channel == self.ConfirmationChannel.WHATSAPP
+            and not self.phone
+        ):
+            errors["phone"] = "A phone number is required for WhatsApp confirmations."
+        if (
+            self.preferred_confirmation_channel == self.ConfirmationChannel.TELEGRAM
+            and not self.telegram_chat_id
+        ):
+            errors["telegram_chat_id"] = (
+                "A Telegram chat ID is required for Telegram confirmations."
+            )
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
         return f"{self.full_name} ({self.shop.name})"
@@ -172,3 +206,52 @@ class Appointment(ShopScopedModel, SoftDeleteModel):
             f"{self.service_name} "
             f"{self.scheduled_start:%Y-%m-%d %H:%M}"
         )
+
+
+class AppointmentNotification(TimeStampedModel):
+    class Channel(models.TextChoices):
+        WHATSAPP = "whatsapp", "WhatsApp"
+        TELEGRAM = "telegram", "Telegram"
+
+    class EventType(models.TextChoices):
+        BOOKING_CONFIRMED = "booking_confirmed", "Booking Confirmed"
+
+    class Status(models.TextChoices):
+        SENT = "sent", "Sent"
+        FAILED = "failed", "Failed"
+        SKIPPED = "skipped", "Skipped"
+
+    appointment = models.ForeignKey(
+        "appointments.Appointment",
+        on_delete=models.CASCADE,
+        related_name="notifications",
+    )
+    customer = models.ForeignKey(
+        "appointments.Customer",
+        on_delete=models.PROTECT,
+        related_name="appointment_notifications",
+    )
+    shop = models.ForeignKey(
+        "shops.Shop",
+        on_delete=models.PROTECT,
+        related_name="appointment_notifications",
+    )
+    channel = models.CharField(max_length=32, choices=Channel.choices, blank=True)
+    event_type = models.CharField(max_length=32, choices=EventType.choices)
+    status = models.CharField(max_length=32, choices=Status.choices)
+    recipient = models.CharField(max_length=128, blank=True)
+    provider_message_id = models.CharField(max_length=128, blank=True)
+    provider_response_json = models.JSONField(default=dict, blank=True)
+    error_message = models.TextField(blank=True)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["appointment", "created_at"]),
+            models.Index(fields=["shop", "status", "created_at"]),
+            models.Index(fields=["customer", "created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.event_type} {self.status} {self.customer.full_name}"

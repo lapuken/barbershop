@@ -258,6 +258,36 @@ variable "session_cookie_age" {
   default     = 3600
 }
 
+variable "whatsapp_phone_number_id" {
+  description = "Meta WhatsApp Cloud API phone number ID used for outbound confirmations."
+  type        = string
+  default     = ""
+}
+
+variable "whatsapp_api_base_url" {
+  description = "Base URL for the WhatsApp Cloud API."
+  type        = string
+  default     = "https://graph.facebook.com"
+}
+
+variable "whatsapp_api_version" {
+  description = "Graph API version used for WhatsApp messaging requests."
+  type        = string
+  default     = "v21.0"
+}
+
+variable "telegram_api_base_url" {
+  description = "Base URL for Telegram Bot API requests."
+  type        = string
+  default     = "https://api.telegram.org"
+}
+
+variable "appointment_notification_timeout_seconds" {
+  description = "HTTP timeout for outbound appointment confirmation requests."
+  type        = number
+  default     = 10
+}
+
 variable "login_rate_limit" {
   description = "Login retry threshold."
   type        = number

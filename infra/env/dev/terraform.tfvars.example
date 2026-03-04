@@ -26,6 +26,7 @@ container_app_min_replicas   = 1
 container_app_max_replicas   = 2
 container_app_cpu            = 0.5
 container_app_memory         = "1Gi"
+whatsapp_phone_number_id     = ""
 django_allowed_hosts = [
   "smartbarbershops-dev.example.com",
 ]

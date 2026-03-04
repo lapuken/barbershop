@@ -53,9 +53,19 @@ terraform -chdir=infra apply -var-file=env/prod/terraform.tfvars
 - `container_image` should be set to the immutable image tag produced by CI/CD.
 - `deploy_application_resources=false` is useful for the first bootstrap when ACR exists but the first application image has not been pushed yet.
 - `django_allowed_hosts` and `django_csrf_trusted_origins` must match the deployed ingress hostname or custom domain.
+- `whatsapp_phone_number_id` is the non-secret sender identifier required for WhatsApp booking confirmations.
 - `postgres_firewall_allow_azure_services` defaults to `true` for a practical MVP. Move to private networking later if your threat model requires it.
 - `container_app_external_enabled=false` allows an internal-only Container App when your environment networking supports that posture.
 - `postgres_public_network_access_enabled=false` disables the PostgreSQL public endpoint; only use it once private connectivity is designed and available.
+
+## Messaging Secret Placeholders
+
+Terraform creates placeholder Key Vault secrets for these outbound booking confirmation providers:
+
+- `telegram_bot_token`
+- `whatsapp_access_token`
+
+Replace those placeholder values after the first apply with [set-keyvault-secret.sh](/home/khido/projects/barbershop/scripts/azure/set-keyvault-secret.sh) or an equivalent reviewed operator flow. The Terraform resources ignore later manual value changes so future applies do not overwrite the live provider tokens.
 
 ## Destroy
 

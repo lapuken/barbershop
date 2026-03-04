@@ -104,6 +104,7 @@ Once `python manage.py runserver 0.0.0.0:8000` is running:
 - recent expenses
 - repeat customers and upcoming appointments
 - WhatsApp and Telegram-ready booking and availability sharing
+- automatic booking confirmations through WhatsApp or Telegram when delivery credentials are configured
 
 That means the dashboard, reports, audit feed, shop selector, appointment schedule, and messaging/share flows have usable data immediately after bootstrap.
 
@@ -176,6 +177,13 @@ docker compose down
    - `key_vault_name`
 
 If this is the first time the environment is being created and no application image exists yet, run the first Terraform apply with `deploy_application_resources=false`, push the first image to ACR, and then re-run Terraform with `deploy_application_resources=true`.
+
+After the first apply, set the placeholder Key Vault secrets for outbound booking confirmations if you want automatic customer delivery:
+
+- `telegram_bot_token`
+- `whatsapp_access_token`
+
+Also set `whatsapp_phone_number_id` in the environment tfvars or GitHub environment variables if WhatsApp delivery should be enabled.
 
 ## GitHub Setup Steps
 

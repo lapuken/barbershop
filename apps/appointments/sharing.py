@@ -57,6 +57,20 @@ def build_appointment_message(appointment, availability_url: str) -> str:
     return "\n".join(message_lines)
 
 
+def build_booking_confirmation_message(appointment, availability_url: str) -> str:
+    message_lines = [
+        f"Hi {appointment.customer.full_name}, your booking is confirmed at {appointment.shop.name}.",
+        f"Service: {appointment.service_name}",
+        f"When: {appointment.scheduled_start.strftime('%b %d %I:%M %p')}",
+    ]
+    if appointment.barber:
+        message_lines.append(f"Barber: {appointment.barber.full_name}")
+    if availability_url:
+        message_lines.append(f"Need to reschedule? View available times: {availability_url}")
+    message_lines.append("Reply to the shop if you need changes.")
+    return "\n".join(message_lines)
+
+
 def build_shop_contact_message(shop, booking_url: str, availability_url: str) -> str:
     return "\n".join(
         [
@@ -66,4 +80,3 @@ def build_shop_contact_message(shop, booking_url: str, availability_url: str) ->
             f"Available times: {availability_url}",
         ]
     )
-

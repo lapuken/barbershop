@@ -12,7 +12,16 @@ from apps.shops.models import Shop
 class CustomerForm(forms.ModelForm):
     class Meta:
         model = Customer
-        fields = ["shop", "full_name", "phone", "email", "notes", "is_active"]
+        fields = [
+            "shop",
+            "full_name",
+            "phone",
+            "email",
+            "telegram_chat_id",
+            "preferred_confirmation_channel",
+            "notes",
+            "is_active",
+        ]
         widgets = {
             "notes": forms.Textarea(attrs={"rows": 3, "class": "form-control"}),
         }
@@ -23,6 +32,12 @@ class CustomerForm(forms.ModelForm):
         if user and user.role != Roles.PLATFORM_ADMIN and active_shop:
             self.fields["shop"].initial = active_shop
             self.fields["shop"].widget = forms.HiddenInput()
+        self.fields["telegram_chat_id"].help_text = (
+            "Required for automatic Telegram confirmations from the shop bot."
+        )
+        self.fields["preferred_confirmation_channel"].help_text = (
+            "Automatic tries WhatsApp first, then Telegram when credentials and customer details exist."
+        )
         for field in self.fields.values():
             if isinstance(field.widget, forms.CheckboxInput):
                 field.widget.attrs["class"] = "form-check-input"
@@ -81,6 +96,11 @@ class PublicBookingForm(forms.Form):
     customer_name = forms.CharField(max_length=255)
     phone = forms.CharField(max_length=32, required=False)
     email = forms.EmailField(required=False)
+    telegram_chat_id = forms.CharField(max_length=64, required=False)
+    preferred_confirmation_channel = forms.ChoiceField(
+        choices=Customer.ConfirmationChannel.choices,
+        initial=Customer.ConfirmationChannel.AUTO,
+    )
     barber = forms.ModelChoiceField(queryset=Barber.objects.none(), required=False)
     service_name = forms.CharField(max_length=255)
     scheduled_start = forms.DateTimeField(
@@ -106,17 +126,44 @@ class PublicBookingForm(forms.Form):
             if current_shop
             else Barber.objects.none()
         )
+        self.fields["telegram_chat_id"].help_text = (
+            "Needed only if you want Telegram confirmations from the shop bot."
+        )
+        self.fields["preferred_confirmation_channel"].help_text = (
+            "Choose where booking confirmations should be delivered."
+        )
         for field in self.fields.values():
             if not field.widget.attrs.get("class"):
                 field.widget.attrs["class"] = "form-control"
 
     def clean(self):
         cleaned_data = super().clean()
-        if not cleaned_data.get("phone") and not cleaned_data.get("email"):
+        if (
+            not cleaned_data.get("phone")
+            and not cleaned_data.get("email")
+            and not cleaned_data.get("telegram_chat_id")
+        ):
             raise forms.ValidationError(
                 (
-                    "Provide at least a phone number or email address so "
+                    "Provide at least a phone number, email address, or Telegram chat ID so "
                     "the shop can confirm your booking."
                 )
+            )
+        preferred_channel = cleaned_data.get("preferred_confirmation_channel")
+        if (
+            preferred_channel == Customer.ConfirmationChannel.WHATSAPP
+            and not cleaned_data.get("phone")
+        ):
+            self.add_error(
+                "phone",
+                "A phone number is required for WhatsApp confirmations.",
+            )
+        if (
+            preferred_channel == Customer.ConfirmationChannel.TELEGRAM
+            and not cleaned_data.get("telegram_chat_id")
+        ):
+            self.add_error(
+                "telegram_chat_id",
+                "A Telegram chat ID is required for Telegram confirmations.",
             )
         return cleaned_data
