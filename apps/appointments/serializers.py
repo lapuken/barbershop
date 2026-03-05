@@ -1,3 +1,5 @@
+import copy
+
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import serializers
 
@@ -34,6 +36,7 @@ class CustomerSerializer(serializers.ModelSerializer):
             "updated_at",
             "deleted_at",
         ]
+        validators = []
 
 
 class AppointmentSerializer(serializers.ModelSerializer):
@@ -60,9 +63,13 @@ class AppointmentSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_by", "updated_by", "created_at", "updated_at", "deleted_at"]
 
     def validate(self, attrs):
-        candidate = self.instance or Appointment(
-            created_by=self.context["request"].user,
-            updated_by=self.context["request"].user,
+        candidate = (
+            copy.deepcopy(self.instance)
+            if self.instance
+            else Appointment(
+                created_by=self.context["request"].user,
+                updated_by=self.context["request"].user,
+            )
         )
         for attr, value in attrs.items():
             setattr(candidate, attr, value)
