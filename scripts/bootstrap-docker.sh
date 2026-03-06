@@ -41,6 +41,7 @@ fi
 set -a
 . ./.env
 set +a
+export ENV_FILE_PATH="${ENV_FILE_PATH:-.env}"
 
 ${COMPOSE} build web
 ${COMPOSE} up -d db

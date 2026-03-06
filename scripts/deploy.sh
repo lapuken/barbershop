@@ -57,6 +57,7 @@ load_env() {
   . "${ENV_FILE}"
   set +a
 
+  export ENV_FILE_PATH="${ENV_FILE}"
   export APP_UID="${APP_UID:-$(id -u)}"
   export APP_GID="${APP_GID:-$(id -g)}"
   export APP_PORT="${APP_PORT:-8000}"

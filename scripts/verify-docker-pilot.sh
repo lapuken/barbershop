@@ -20,6 +20,7 @@ compose_cmd() {
 }
 
 COMPOSE="$(compose_cmd)"
+export ENV_FILE_PATH="${ENV_FILE_PATH:-.env}"
 export APP_UID="${APP_UID:-$(id -u)}"
 export APP_GID="${APP_GID:-$(id -g)}"
 export APP_PORT="${APP_PORT:-8000}"
