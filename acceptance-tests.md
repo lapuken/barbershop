@@ -39,7 +39,7 @@ APP_BASE_URL=http://127.0.0.1:8000 ./scripts/run-browser-smoke.sh
 If the app was started with `./scripts/bootstrap-docker.sh`, use:
 
 ```bash
-APP_BASE_URL=http://127.0.0.1 ./scripts/run-browser-smoke.sh
+APP_BASE_URL=http://127.0.0.1:8000 ./scripts/run-browser-smoke.sh
 ```
 
 For the Docker pilot path, run this verifier before sharing the URL:

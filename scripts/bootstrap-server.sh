@@ -6,7 +6,8 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 1
 fi
 
-APP_DIR="${APP_DIR:-/opt/smart-barber}"
+APP_DIR="${APP_DIR:-/opt/smartbarber/app}"
+PROJECT_DIR="$(dirname "${APP_DIR}")"
 APP_USER="${APP_USER:-${SUDO_USER:-root}}"
 CONFIGURE_UFW="${CONFIGURE_UFW:-false}"
 ADMIN_SSH_IP="${ADMIN_SSH_IP:-}"
@@ -16,7 +17,7 @@ apt-get update
 DEBIAN_FRONTEND=noninteractive apt-get upgrade -y
 
 echo "Installing base packages..."
-apt-get install -y ca-certificates curl git gnupg lsb-release jq ufw
+apt-get install -y ca-certificates curl git gnupg lsb-release jq ufw nginx certbot python3-certbot-nginx openssl
 
 echo "Installing Docker Engine and Docker Compose plugin..."
 install -m 0755 -d /etc/apt/keyrings
@@ -35,13 +36,24 @@ apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 systemctl enable --now docker
 
 echo "Preparing application directories..."
+install -d -m 0755 "${PROJECT_DIR}"
 install -d -m 0755 "${APP_DIR}"
-install -d -m 0755 "${APP_DIR}/backups"
+install -d -m 0755 "${PROJECT_DIR}/env"
+install -d -m 0755 "${PROJECT_DIR}/backups"
+install -d -m 0755 "${PROJECT_DIR}/logs"
+install -d -m 0755 "${PROJECT_DIR}/logs/nginx"
+install -d -m 0755 /var/www/certbot
 
 if id "${APP_USER}" >/dev/null 2>&1; then
-  chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}"
+  chown -R "${APP_USER}:${APP_USER}" "${PROJECT_DIR}"
+  if id www-data >/dev/null 2>&1; then
+    chown -R www-data:adm "${PROJECT_DIR}/logs/nginx"
+    chmod 775 "${PROJECT_DIR}/logs" "${PROJECT_DIR}/logs/nginx"
+  fi
   usermod -aG docker "${APP_USER}" || true
 fi
+
+systemctl enable --now nginx
 
 if [[ "${CONFIGURE_UFW}" == "true" ]]; then
   echo "Configuring UFW baseline rules..."
@@ -64,12 +76,19 @@ Server bootstrap complete.
 Application directory:
   ${APP_DIR}
 
+Project root:
+  ${PROJECT_DIR}
+
 Next steps:
 1. Upload or clone the repository into ${APP_DIR}
-2. Create ${APP_DIR}/.env from .env.example with production secrets
+2. Create ${PROJECT_DIR}/env/.env with production secrets
 3. Run:
      cd ${APP_DIR}
-     ./scripts/deploy.sh
+     ./deploy.sh
+4. Install the Nginx site from:
+     ${APP_DIR}/nginx/app.machinjiri.net.bootstrap.conf
+5. Continue with:
+     ${APP_DIR}/DEPLOYMENT.md
 
 Firewall guidance (if CONFIGURE_UFW was false):
   sudo ufw allow OpenSSH

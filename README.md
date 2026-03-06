@@ -2,34 +2,42 @@
 
 Smart Barber Shops is a Django-based multi-branch barber shop operations platform. This repository now includes a production-oriented Azure deployment baseline built around Azure Container Apps, Azure Container Registry, Azure Database for PostgreSQL Flexible Server, Azure Key Vault, Terraform, and GitHub Actions using OpenID Connect.
 
-## DigitalOcean Single-Droplet Deployment (MVP)
+## Ubuntu VPS Deployment
 
-This repository also includes a cost-effective deployment path for one Ubuntu droplet on DigitalOcean using Docker Compose:
+This repository includes a production deployment path for a single Ubuntu 22.04 VPS using:
 
-- `caddy` for automatic HTTPS and reverse proxy
-- `web` for Django + Gunicorn
-- `db` for PostgreSQL
+- host `nginx` for reverse proxy and TLS termination
+- `certbot` + Let's Encrypt for certificates
+- Docker Compose for the Django web app and PostgreSQL
+- a host-mounted `shared/static` directory for direct static serving and a host-mounted `shared/media` directory for persistent uploads and backups
 
-Production hostname for this path:
+Target hostname for this path:
 
-- `app.machinjiri.net` (under root domain `machinjiri.net`)
+- `app.machinjiri.net`
+
+Optional redirect target:
+
+- `machinjiri.net` -> `https://app.machinjiri.net`
 
 Key deployment assets:
 
+- [DEPLOYMENT.md](/home/khido/projects/barbershop/DEPLOYMENT.md)
 - [docker-compose.yml](/home/khido/projects/barbershop/docker-compose.yml)
-- [Caddyfile](/home/khido/projects/barbershop/Caddyfile)
-- [scripts/bootstrap-server.sh](/home/khido/projects/barbershop/scripts/bootstrap-server.sh)
-- [scripts/deploy.sh](/home/khido/projects/barbershop/scripts/deploy.sh)
-- [docs/digitalocean-deployment.md](/home/khido/projects/barbershop/docs/digitalocean-deployment.md)
+- [deploy.sh](/home/khido/projects/barbershop/deploy.sh)
+- [backup.sh](/home/khido/projects/barbershop/backup.sh)
+- [nginx/app.machinjiri.net.bootstrap.conf](/home/khido/projects/barbershop/nginx/app.machinjiri.net.bootstrap.conf)
+- [nginx/app.machinjiri.net.conf](/home/khido/projects/barbershop/nginx/app.machinjiri.net.conf)
 - [docs/operations-runbook.md](/home/khido/projects/barbershop/docs/operations-runbook.md)
 - [docs/security-hardening.md](/home/khido/projects/barbershop/docs/security-hardening.md)
 
-System assumptions for the single-droplet path:
+System assumptions for the single-VPS path:
 
-- one droplet hosts proxy, app, and database
-- only ports `80/443` are exposed publicly by Caddy
-- `.env` exists only on server and is never committed
-- PostgreSQL persists in named Docker volume and is backed up using `scripts/backup-db.sh`
+- one VPS hosts Nginx, the Django app container, and the PostgreSQL container
+- only `80/tcp` and `443/tcp` are exposed publicly
+- the app container binds only to `127.0.0.1:8000`
+- `.env` exists only on the server and is never committed
+- PostgreSQL persists in a named Docker volume
+- uploaded files live under `shared/media/` and should be included in backups
 
 ## Architecture Overview
 
@@ -149,15 +157,15 @@ That path will:
 
 - copy `.env.local.example` to `.env` if needed
 - build the app image
-- start PostgreSQL, the Django web container, and Caddy
+- start PostgreSQL and the Django web container
 - wait for the app health endpoint
 - seed the richer demo dataset inside the web container
 
 Docker pilot URLs:
 
-- App root: `http://127.0.0.1/`
-- Login: `http://127.0.0.1/accounts/login/`
-- Health: `http://127.0.0.1/healthz/`
+- App root: `http://127.0.0.1:8000/`
+- Login: `http://127.0.0.1:8000/accounts/login/`
+- Health: `http://127.0.0.1:8000/healthz/`
 
 After bootstrap, run the pilot verifier before sharing the URL:
 
@@ -274,10 +282,10 @@ Optional write-mode smoke test:
 SMOKE_WRITE_TESTS=true APP_BASE_URL=http://127.0.0.1:8000 ./scripts/run-browser-smoke.sh
 ```
 
-If you use the Docker-only pilot path, point the smoke test at the Caddy endpoint:
+If you use the Docker-only pilot path, point the smoke test at the Docker-exposed app port:
 
 ```bash
-APP_BASE_URL=http://127.0.0.1 ./scripts/run-browser-smoke.sh
+APP_BASE_URL=http://127.0.0.1:8000 ./scripts/run-browser-smoke.sh
 ```
 
 ## Runtime Configuration
@@ -302,7 +310,7 @@ Production deployment defaults are in [`.env.example`](/home/khido/projects/barb
 
 ## Migration and Static Files Strategy
 
-- Static files are collected by the container entrypoint on startup.
+- Production deployments run `collectstatic` explicitly from `deploy.sh`.
 - Migrations are not run on normal web container startup.
 - A dedicated Azure Container Apps Job runs `python manage.py migrate --noinput` before the web app image is updated.
 - If the migration job fails, the deployment workflow stops before the web revision is updated.

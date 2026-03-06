@@ -21,6 +21,7 @@ Thumbs.db
 .env.*.local
 media/
 staticfiles/
+shared/
 playwright-report/
 test-results/
 backups/

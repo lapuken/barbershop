@@ -26,6 +26,9 @@ host_ips() {
 }
 
 COMPOSE="$(compose_cmd)"
+export APP_UID="${APP_UID:-$(id -u)}"
+export APP_GID="${APP_GID:-$(id -g)}"
+export APP_PORT="${APP_PORT:-8000}"
 
 if [[ ! -f ".env" ]]; then
   if [[ -f ".env.local.example" ]]; then
@@ -39,7 +42,8 @@ set -a
 . ./.env
 set +a
 
-${COMPOSE} up --build -d db web caddy
+${COMPOSE} build web
+${COMPOSE} up -d db
 
 for attempt in $(seq 1 40); do
   if ${COMPOSE} exec -T db pg_isready -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" >/dev/null 2>&1; then
@@ -48,14 +52,17 @@ for attempt in $(seq 1 40); do
   sleep 2
 done
 
+${COMPOSE} run --rm --no-deps -e RUN_COLLECTSTATIC=false web python manage.py migrate --noinput
+${COMPOSE} run --rm --no-deps -e RUN_COLLECTSTATIC=false web python manage.py collectstatic --noinput
+${COMPOSE} up -d web
+
 for attempt in $(seq 1 40); do
-  if curl --fail --silent --show-error "http://127.0.0.1/healthz/" >/dev/null 2>&1; then
+  if curl --fail --silent --show-error "http://127.0.0.1:${APP_PORT}/healthz/" >/dev/null 2>&1; then
     break
   fi
   sleep 3
 done
 
-${COMPOSE} exec -T web python manage.py migrate --noinput
 ${COMPOSE} exec -T web python manage.py seed_demo
 
 HOST_IPS="$(host_ips)"
@@ -65,14 +72,14 @@ cat <<EOF
 Docker bootstrap complete.
 
 Application URLs:
-  App root: http://127.0.0.1/
-  Login:    http://127.0.0.1/accounts/login/
-  Health:   http://127.0.0.1/healthz/
+  App root: http://127.0.0.1:${APP_PORT}/
+  Login:    http://127.0.0.1:${APP_PORT}/accounts/login/
+  Health:   http://127.0.0.1:${APP_PORT}/healthz/
 
 $(if [[ -n "${HOST_IPS}" ]]; then
   printf "Host IP candidates for LAN testing:\n"
   for ip in ${HOST_IPS}; do
-    printf "  http://%s/\n" "${ip}"
+    printf "  http://%s:%s/\n" "${ip}" "${APP_PORT}"
   done
 fi)
 

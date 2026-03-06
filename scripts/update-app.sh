@@ -23,5 +23,6 @@ Update flow complete.
 Post-update checks:
   docker compose ps
   docker compose logs --tail=100 web
-  docker compose logs --tail=100 caddy
+  docker compose logs --tail=100 db
+  sudo nginx -t && sudo systemctl reload nginx
 EOF

@@ -5,53 +5,42 @@ Use:
 - `ROOT_DOMAIN=machinjiri.net`
 - `APP_DOMAIN=app.machinjiri.net`
 
-This deployment targets the app subdomain only so the apex/root domain can stay in use for another site.
+This deployment can either:
 
-## 1. Add Domain to DigitalOcean DNS
+- serve only `app.machinjiri.net`, or
+- redirect `machinjiri.net` to `https://app.machinjiri.net`
 
-1. Open Networking -> Domains in DigitalOcean.
-2. Add `machinjiri.net` if it is not already present.
-3. If your registrar is external, ensure nameservers point to DigitalOcean DNS.
+## 1. Point DNS to the VPS
 
-## 2. Create DNS Record for the App
+Create or update these DNS records:
 
-Create an **A** record:
+- `A machinjiri.net -> <VPS_PUBLIC_IP>`
+- `A app.machinjiri.net -> <VPS_PUBLIC_IP>`
 
-- Type: `A`
-- Hostname: `app`
-- Value: `<DROPLET_PUBLIC_IPV4>`
-- TTL: default (or 300s for faster iteration)
+If you do not want the root-domain redirect, the `app` record is still mandatory.
 
-Result: `app.machinjiri.net` points to your droplet.
+## 2. Verify Propagation
 
-## 3. Keep Apex Domain Optional
-
-You do **not** need to move `machinjiri.net` apex to this droplet unless you want the same server to handle it.
-
-This deployment works with only:
-
-- `app.machinjiri.net` -> droplet IP
-
-## 4. Verify DNS Propagation
-
-From your workstation:
+From any machine:
 
 ```bash
+dig +short machinjiri.net
 dig +short app.machinjiri.net
 ```
 
 Or:
 
 ```bash
+nslookup machinjiri.net
 nslookup app.machinjiri.net
 ```
 
-The returned IP must match your droplet before Caddy can issue a public TLS certificate.
+Both names should resolve to the VPS before running Certbot.
 
-## 5. TLS Issuance Note
+## 3. TLS Issuance Note
 
-Caddy can only obtain Let's Encrypt certificates when:
+Let's Encrypt can issue certificates only when:
 
 - the DNS record is publicly resolvable
-- inbound `80/tcp` and `443/tcp` are reachable
+- inbound `80/tcp` is reachable during HTTP challenge validation
 - the hostname in `.env` matches the DNS name (`APP_DOMAIN=app.machinjiri.net`)

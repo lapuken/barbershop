@@ -4,9 +4,18 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "${ROOT_DIR}"
 
-ENV_FILE="${ENV_FILE:-${ROOT_DIR}/.env}"
+PROJECT_DIR="$(cd "${ROOT_DIR}/.." && pwd)"
+if [[ -d "${PROJECT_DIR}/env" || -d "${PROJECT_DIR}/backups" || -d "${PROJECT_DIR}/logs" ]]; then
+  DEFAULT_ENV_FILE="${PROJECT_DIR}/env/.env"
+  DEFAULT_BACKUP_DIR="${PROJECT_DIR}/backups"
+else
+  DEFAULT_ENV_FILE="${ROOT_DIR}/.env"
+  DEFAULT_BACKUP_DIR="${ROOT_DIR}/backups"
+fi
+
+ENV_FILE="${ENV_FILE:-${DEFAULT_ENV_FILE}}"
 COMPOSE_FILE="${COMPOSE_FILE:-${ROOT_DIR}/docker-compose.yml}"
-BACKUP_DIR="${BACKUP_DIR:-${ROOT_DIR}/backups}"
+BACKUP_DIR="${BACKUP_DIR:-${DEFAULT_BACKUP_DIR}}"
 
 compose_cmd() {
   if docker compose version >/dev/null 2>&1; then
@@ -49,6 +58,9 @@ fi
 set -a
 . "${ENV_FILE}"
 set +a
+export APP_UID="${APP_UID:-$(id -u)}"
+export APP_GID="${APP_GID:-$(id -g)}"
+export APP_PORT="${APP_PORT:-8000}"
 
 if [[ -z "${POSTGRES_DB:-}" || -z "${POSTGRES_USER:-}" ]]; then
   echo "POSTGRES_DB and POSTGRES_USER must be set in ${ENV_FILE}." >&2
