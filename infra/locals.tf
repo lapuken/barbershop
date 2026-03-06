@@ -1,7 +1,7 @@
 locals {
-  project_slug       = regexreplace(lower(var.project_name), "[^a-z0-9]", "")
-  environment_slug   = regexreplace(lower(var.environment), "[^a-z0-9]", "")
-  name_suffix_slug   = regexreplace(lower(var.name_suffix), "[^a-z0-9]", "")
+  project_slug       = replace(lower(var.project_name), "/[^a-z0-9]/", "")
+  environment_slug   = replace(lower(var.environment), "/[^a-z0-9]/", "")
+  name_suffix_slug   = replace(lower(var.name_suffix), "/[^a-z0-9]/", "")
   base_name          = "${local.project_slug}-${local.environment_slug}-${local.name_suffix_slug}"
   compact_name       = "${local.project_slug}${local.environment_slug}${local.name_suffix_slug}"
   resource_group     = "${local.base_name}-rg"

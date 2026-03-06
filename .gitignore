@@ -23,6 +23,7 @@ media/
 staticfiles/
 playwright-report/
 test-results/
+backups/
 .terraform/
 *.tfstate
 *.tfstate.*

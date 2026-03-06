@@ -28,14 +28,18 @@ host_ips() {
 COMPOSE="$(compose_cmd)"
 
 if [[ ! -f ".env" ]]; then
-  cp .env.example .env
+  if [[ -f ".env.local.example" ]]; then
+    cp .env.local.example .env
+  else
+    cp .env.example .env
+  fi
 fi
 
 set -a
 . ./.env
 set +a
 
-${COMPOSE} up --build -d db web nginx
+${COMPOSE} up --build -d db web caddy
 
 for attempt in $(seq 1 40); do
   if ${COMPOSE} exec -T db pg_isready -U "${POSTGRES_USER}" -d "${POSTGRES_DB}" >/dev/null 2>&1; then
@@ -45,7 +49,7 @@ for attempt in $(seq 1 40); do
 done
 
 for attempt in $(seq 1 40); do
-  if curl --fail --silent "http://127.0.0.1/healthz/" >/dev/null 2>&1; then
+  if curl --fail --silent --show-error "http://127.0.0.1/healthz/" >/dev/null 2>&1; then
     break
   fi
   sleep 3

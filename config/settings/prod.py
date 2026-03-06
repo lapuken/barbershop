@@ -1,6 +1,11 @@
-from .base import *
+from .base import *  # noqa: F403
 
 DEBUG = False
+ALLOWED_HOSTS = env_list("DJANGO_ALLOWED_HOSTS", "app.machinjiri.net")  # noqa: F405
+CSRF_TRUSTED_ORIGINS = env_list(  # noqa: F405
+    "DJANGO_CSRF_TRUSTED_ORIGINS",
+    "https://app.machinjiri.net",
+)
 SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
 SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", True)
 CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", True)

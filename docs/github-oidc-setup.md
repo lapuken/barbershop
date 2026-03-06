@@ -82,6 +82,32 @@ Set these per environment in GitHub:
 
 Most of the Azure resource-name variables come directly from Terraform outputs after the first successful apply.
 
+## Sync Variables From Terraform
+
+After Terraform apply completes for an environment, sync all required GitHub environment variables with:
+
+```bash
+./scripts/azure/sync-github-environment-vars.sh dev
+```
+
+For production:
+
+```bash
+./scripts/azure/sync-github-environment-vars.sh prod
+```
+
+What this script does:
+
+- reads `github_environment_variables` from Terraform outputs
+- reads `TFSTATE_*` values from `infra/env/<environment>/backend.hcl`
+- writes all values to the matching GitHub environment using `gh variable set`
+
+Dry-run mode:
+
+```bash
+./scripts/azure/sync-github-environment-vars.sh dev --dry-run
+```
+
 ## Required Azure Role Assignments
 
 ### Runtime identity

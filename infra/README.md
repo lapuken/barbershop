@@ -58,6 +58,16 @@ terraform -chdir=infra apply -var-file=env/prod/terraform.tfvars
 - `container_app_external_enabled=false` allows an internal-only Container App when your environment networking supports that posture.
 - `postgres_public_network_access_enabled=false` disables the PostgreSQL public endpoint; only use it once private connectivity is designed and available.
 
+## GitHub Variable Sync
+
+After apply, you can sync required GitHub environment variables from Terraform outputs and backend config:
+
+```bash
+./scripts/azure/sync-github-environment-vars.sh dev
+```
+
+The script reads the `github_environment_variables` Terraform output and writes values to the matching GitHub environment.
+
 ## Messaging Secret Placeholders
 
 Terraform creates placeholder Key Vault secrets for these outbound booking confirmation providers:

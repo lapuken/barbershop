@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
 
 from dotenv import load_dotenv
 
@@ -16,6 +17,45 @@ def env_bool(name: str, default: bool = False) -> bool:
 def env_list(name: str, default: str = "") -> list[str]:
     value = os.getenv(name, default)
     return [item.strip() for item in value.split(",") if item.strip()]
+
+
+def database_config_from_env() -> dict:
+    database_url = os.getenv("DATABASE_URL", "").strip()
+    default_conn_max_age = int(os.getenv("POSTGRES_CONN_MAX_AGE", "60"))
+    default_sslmode = os.getenv("POSTGRES_SSLMODE", "prefer")
+
+    if not database_url:
+        return {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB", "smart_barber_shops"),
+            "USER": os.getenv("POSTGRES_USER", "smart_barber"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "smart_barber"),
+            "HOST": os.getenv("POSTGRES_HOST", "db"),
+            "PORT": os.getenv("POSTGRES_PORT", "5432"),
+            "CONN_MAX_AGE": default_conn_max_age,
+            "OPTIONS": {
+                "sslmode": default_sslmode,
+            },
+        }
+
+    parsed = urlparse(database_url)
+    if parsed.scheme not in {"postgres", "postgresql"}:
+        raise ValueError("DATABASE_URL must use postgres:// or postgresql://")
+
+    query_params = parse_qs(parsed.query)
+    sslmode = query_params.get("sslmode", [default_sslmode])[0]
+    return {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": parsed.path.lstrip("/") or os.getenv("POSTGRES_DB", "smart_barber_shops"),
+        "USER": unquote(parsed.username or os.getenv("POSTGRES_USER", "")),
+        "PASSWORD": unquote(parsed.password or os.getenv("POSTGRES_PASSWORD", "")),
+        "HOST": parsed.hostname or os.getenv("POSTGRES_HOST", "db"),
+        "PORT": str(parsed.port or os.getenv("POSTGRES_PORT", "5432")),
+        "CONN_MAX_AGE": default_conn_max_age,
+        "OPTIONS": {
+            "sslmode": sslmode,
+        },
+    }
 
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key-change-me")
@@ -81,18 +121,7 @@ ASGI_APPLICATION = "config.asgi.application"
 AUTH_USER_MODEL = "accounts.User"
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.getenv("POSTGRES_DB", "smart_barber_shops"),
-        "USER": os.getenv("POSTGRES_USER", "smart_barber"),
-        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "smart_barber"),
-        "HOST": os.getenv("POSTGRES_HOST", "db"),
-        "PORT": os.getenv("POSTGRES_PORT", "5432"),
-        "CONN_MAX_AGE": int(os.getenv("POSTGRES_CONN_MAX_AGE", "60")),
-        "OPTIONS": {
-            "sslmode": os.getenv("POSTGRES_SSLMODE", "prefer"),
-        },
-    }
+    "default": database_config_from_env()
 }
 
 AUTH_PASSWORD_VALIDATORS = [

@@ -1,140 +1,210 @@
-# Operations Runbook
+# Operations Runbook (DigitalOcean Droplet)
 
-## Deploy a New Version
+This runbook covers day-2 operations for the single-droplet Docker Compose deployment.
 
-1. Confirm `CI` is green on the target commit.
-2. For `dev`, run or allow `Deploy Dev`.
-3. For `prod`, trigger `Deploy Prod` and complete any GitHub environment approvals.
-4. Verify:
-   - migration job succeeded
-   - Container App revision updated
-   - `/healthz/` returns `200`
-   - login and dashboard load correctly
+## Assumptions
 
-## Rotate a Secret
+- Stack is running from `/opt/smart-barber` (or equivalent clone path).
+- Services are managed by Docker Compose (`caddy`, `web`, `db`).
+- Production settings are in `.env`.
+- Public hostname is `app.machinjiri.net`.
 
-### Django secret key, PostgreSQL password, or messaging provider tokens
-
-1. Use [set-keyvault-secret.sh](/home/khido/projects/barbershop/scripts/azure/set-keyvault-secret.sh) or the Azure portal/CLI to write the new secret value into Key Vault.
-2. If rotating the PostgreSQL admin password, update the password on the PostgreSQL server first.
-3. For customer booking confirmations, the relevant Key Vault secret names are exposed through Terraform outputs:
-   - `telegram_bot_token`
-   - `whatsapp_access_token`
-4. Restart the Container App revision so the new secret version is resolved:
+## First Deployment
 
 ```bash
-az containerapp revision restart \
-  --resource-group <resource-group> \
-  --name <container-app-name> \
-  --revision <revision-name>
+cd /opt/smart-barber
+cp .env.example .env
+# edit .env with real secrets before deploying
+./scripts/deploy.sh
 ```
 
-5. Re-run the migration job if the password is used there as well.
-
-## Enable WhatsApp or Telegram Booking Confirmations
-
-1. Apply Terraform so the Container App has the new secret references and runtime variables.
-2. Set the Key Vault placeholder secrets to their real provider values:
+Create admin user:
 
 ```bash
-./scripts/azure/set-keyvault-secret.sh <key-vault-name> <telegram-bot-token-secret-name> <telegram-bot-token>
-./scripts/azure/set-keyvault-secret.sh <key-vault-name> <whatsapp-access-token-secret-name> <whatsapp-access-token>
+./scripts/create-initial-admin.sh
 ```
 
-3. Set `whatsapp_phone_number_id` in Terraform or the `TF_WHATSAPP_PHONE_NUMBER_ID` GitHub environment variable if WhatsApp delivery should be active.
-4. Restart the Container App revision so the updated secret versions are loaded.
-5. Create or confirm a test appointment and verify an `AppointmentNotification` record is written in Django admin.
+## Routine Update
+
+If code was already updated (for example via `git pull`):
+
+```bash
+./scripts/update-app.sh
+```
+
+If you want the script to pull latest commit first:
+
+```bash
+./scripts/update-app.sh --git-pull
+```
+
+Deployment behavior:
+
+- rebuilds the `web` image
+- ensures DB is up
+- runs migrations
+- runs collectstatic
+- restarts `web` and `caddy`
+- preserves PostgreSQL volume data
+- typically causes a short restart window (low downtime, not zero-downtime)
+
+## Restart Containers
+
+Restart all services:
+
+```bash
+docker compose restart
+```
+
+Restart only app tier:
+
+```bash
+docker compose restart web caddy
+```
+
+## View Logs
+
+Tail reverse proxy + app logs:
+
+```bash
+docker compose logs -f caddy web
+```
+
+Tail database logs:
+
+```bash
+docker compose logs -f db
+```
+
+## Run Backup
+
+```bash
+./scripts/backup-db.sh
+```
+
+Backups are written to `./backups/` with timestamps.
+
+Recommended frequency:
+
+- minimum daily backup
+- keep at least 7 daily backups + 4 weekly backups
+- copy backups off-server (object storage or another host)
+
+## Restore Backup
+
+```bash
+./scripts/restore-db.sh backups/smartbarber-YYYYMMDD-HHMMSS.dump
+```
+
+Safety behavior:
+
+- prompts for explicit `RESTORE` confirmation
+- stops `web` and `caddy` before restore
+- restores database
+- starts `web` and `caddy` again
+
+Always test restore on a non-production clone before production restores.
+
+## Rotate Django Secret Key or DB Password
+
+1. Edit `.env` and set the new value(s):
+   - `DJANGO_SECRET_KEY`
+   - `POSTGRES_PASSWORD` (and `DATABASE_URL` if used)
+2. If rotating DB password, apply it in PostgreSQL first:
+
+```bash
+docker compose exec -T db psql -U "$POSTGRES_USER" -d postgres -c "ALTER USER \"$POSTGRES_USER\" WITH PASSWORD 'new-password';"
+```
+
+3. Re-deploy:
+
+```bash
+./scripts/deploy.sh
+```
+
+## Create Admin User
+
+Interactive:
+
+```bash
+./scripts/create-initial-admin.sh
+```
+
+Non-interactive:
+
+```bash
+export DJANGO_SUPERUSER_USERNAME=admin
+export DJANGO_SUPERUSER_EMAIL=admin@example.com
+export DJANGO_SUPERUSER_PASSWORD='strong-password'
+./scripts/create-initial-admin.sh
+```
 
 ## Run Migrations Manually
 
 ```bash
-./scripts/azure/run-migration-job.sh <resource-group> <migration-job-name> <image-reference>
+docker compose run --rm -e RUN_COLLECTSTATIC=false web python manage.py migrate --noinput
 ```
 
-Use the same image tag you intend to deploy to the web application.
+## Troubleshoot 502 or Startup Failures
 
-## Roll Back the Application
-
-1. Identify the previous known-good ACR image tag.
-2. Update the migration job image only if you need the older code path for later database tasks.
-3. Update the web app image:
+1. Check container states:
 
 ```bash
-az containerapp update \
-  --resource-group <resource-group> \
-  --name <container-app-name> \
-  --image <acr-login-server>/smartbarber/web:<previous-tag>
+docker compose ps
 ```
 
-4. Verify `/healthz/`.
-
-If the failed release contained incompatible schema changes, do not rely on image rollback alone.
-
-## Scale the App
-
-Infrastructure-managed path:
-
-1. Update `TF_VAR_container_app_min_replicas` and `TF_VAR_container_app_max_replicas`.
-2. Run `Terraform Apply`.
-
-Emergency runtime path:
+2. Inspect logs:
 
 ```bash
-az containerapp update \
-  --resource-group <resource-group> \
-  --name <container-app-name> \
-  --min-replicas 2 \
-  --max-replicas 6
+docker compose logs --tail=200 caddy web db
 ```
 
-Record the emergency change and reconcile it back into Terraform.
-
-## Move to a More Private Network Posture
-
-Infrastructure-managed path:
-
-1. Set `container_app_external_enabled=false` if the web workload should be internal-only.
-2. Set `postgres_public_network_access_enabled=false` once private connectivity to PostgreSQL exists.
-3. Run `Terraform Apply`.
-
-Do not disable public ingress or PostgreSQL public networking until the replacement network path has been validated end to end.
-
-## Troubleshoot a Failed Deployment
-
-1. Check the GitHub Actions job logs.
-2. Inspect the migration job execution:
+3. Validate DB readiness:
 
 ```bash
-az containerapp job execution list \
-  --resource-group <resource-group> \
-  --name <migration-job-name> \
-  --output table
+docker compose exec -T db sh -c 'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
 
-3. Inspect the web app revision state:
+4. Validate Django health endpoint through proxy:
 
 ```bash
-az containerapp revision list \
-  --resource-group <resource-group> \
-  --name <container-app-name> \
-  --output table
+curl -I https://app.machinjiri.net/healthz/
 ```
 
-4. Query the health endpoint and review logs in Log Analytics.
-5. If secret resolution failed, verify:
-   - Key Vault secret exists
-   - runtime identity still has `Key Vault Secrets User`
-   - the Container App secret references still point to the correct secret IDs
+5. Common causes:
+   - wrong `DJANGO_ALLOWED_HOSTS` / `DJANGO_CSRF_TRUSTED_ORIGINS`
+   - invalid DB credentials
+   - migrations pending
+   - DNS not pointed to droplet (Caddy cannot issue TLS cert)
 
-## Troubleshoot PostgreSQL Connectivity
+## TLS Renew / Verification
 
-1. Confirm the server FQDN and database name match the Container App environment variables.
-2. Confirm `POSTGRES_SSLMODE=require`.
-3. Confirm the Azure services firewall rule or your approved source IP rule is present.
-4. Validate password state in Key Vault and on the PostgreSQL server.
+Caddy manages certificate issuance and renewal automatically.
 
-## Recovery Considerations
+Check Caddy logs for ACME status:
 
-- Ensure PostgreSQL backups and retention settings meet business needs before production use.
-- Treat Terraform state as a recovery-critical system asset.
-- Keep at least one previous application image tag available in ACR.
+```bash
+docker compose logs --tail=200 caddy
+```
+
+Verify served certificate:
+
+```bash
+echo | openssl s_client -servername app.machinjiri.net -connect app.machinjiri.net:443 2>/dev/null | openssl x509 -noout -issuer -dates -subject
+```
+
+## Recover After Server Reboot
+
+Docker services are configured with `restart: unless-stopped`.
+After reboot:
+
+```bash
+docker compose ps
+docker compose logs --tail=100 caddy web db
+```
+
+If services were stopped intentionally before reboot:
+
+```bash
+docker compose up -d
+```

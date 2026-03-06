@@ -2,6 +2,35 @@
 
 Smart Barber Shops is a Django-based multi-branch barber shop operations platform. This repository now includes a production-oriented Azure deployment baseline built around Azure Container Apps, Azure Container Registry, Azure Database for PostgreSQL Flexible Server, Azure Key Vault, Terraform, and GitHub Actions using OpenID Connect.
 
+## DigitalOcean Single-Droplet Deployment (MVP)
+
+This repository also includes a cost-effective deployment path for one Ubuntu droplet on DigitalOcean using Docker Compose:
+
+- `caddy` for automatic HTTPS and reverse proxy
+- `web` for Django + Gunicorn
+- `db` for PostgreSQL
+
+Production hostname for this path:
+
+- `app.machinjiri.net` (under root domain `machinjiri.net`)
+
+Key deployment assets:
+
+- [docker-compose.yml](/home/khido/projects/barbershop/docker-compose.yml)
+- [Caddyfile](/home/khido/projects/barbershop/Caddyfile)
+- [scripts/bootstrap-server.sh](/home/khido/projects/barbershop/scripts/bootstrap-server.sh)
+- [scripts/deploy.sh](/home/khido/projects/barbershop/scripts/deploy.sh)
+- [docs/digitalocean-deployment.md](/home/khido/projects/barbershop/docs/digitalocean-deployment.md)
+- [docs/operations-runbook.md](/home/khido/projects/barbershop/docs/operations-runbook.md)
+- [docs/security-hardening.md](/home/khido/projects/barbershop/docs/security-hardening.md)
+
+System assumptions for the single-droplet path:
+
+- one droplet hosts proxy, app, and database
+- only ports `80/443` are exposed publicly by Caddy
+- `.env` exists only on server and is never committed
+- PostgreSQL persists in named Docker volume and is backed up using `scripts/backup-db.sh`
+
 ## Architecture Overview
 
 - Application runtime: Django + Django REST Framework in a Docker container
@@ -67,7 +96,7 @@ python manage.py runserver 0.0.0.0:8000
 
 That script will:
 
-- copy `.env.example` to `.env` if needed
+- copy `.env.local.example` to `.env` if needed
 - create `.venv`
 - install Python dependencies
 - start the PostgreSQL Docker service
@@ -118,9 +147,9 @@ If you want to run the app without a local Python setup, use the Docker bootstra
 
 That path will:
 
-- copy `.env.example` to `.env` if needed
+- copy `.env.local.example` to `.env` if needed
 - build the app image
-- start PostgreSQL, the Django web container, and Nginx
+- start PostgreSQL, the Django web container, and Caddy
 - wait for the app health endpoint
 - seed the richer demo dataset inside the web container
 
@@ -245,7 +274,7 @@ Optional write-mode smoke test:
 SMOKE_WRITE_TESTS=true APP_BASE_URL=http://127.0.0.1:8000 ./scripts/run-browser-smoke.sh
 ```
 
-If you use the Docker-only pilot path, point the smoke test at Nginx instead:
+If you use the Docker-only pilot path, point the smoke test at the Caddy endpoint:
 
 ```bash
 APP_BASE_URL=http://127.0.0.1 ./scripts/run-browser-smoke.sh
@@ -268,7 +297,8 @@ The Azure deployment expects the following categories of configuration:
   - `DJANGO_SECRET_KEY`
   - `POSTGRES_PASSWORD`
 
-The local development file remains [`.env.example`](/home/khido/projects/barbershop/.env.example).
+Local development defaults are in [`.env.local.example`](/home/khido/projects/barbershop/.env.local.example).
+Production deployment defaults are in [`.env.example`](/home/khido/projects/barbershop/.env.example).
 
 ## Migration and Static Files Strategy
 
