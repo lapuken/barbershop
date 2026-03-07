@@ -31,12 +31,7 @@ The current MVP does not expose a dedicated barber-only workflow, so barber test
 6. Record a daily sale for a barber with service and product lines.
 7. Attempt a duplicate same-day sale for the same barber and confirm the edit flow behavior is clear.
 8. Record an expense and confirm reports reflect the change.
-9. Review the reports dashboard for:
-   - daily totals
-   - weekly totals
-   - monthly totals
-   - top barber
-   - expense categories
+9. Review the reports dashboard for daily totals, weekly totals, monthly totals, top barber, expense categories, and product performance.
 10. Review audit logs for create/update/delete visibility.
 
 ## Feedback Prompts for Barbers and Staff
@@ -50,16 +45,16 @@ The current MVP does not expose a dedicated barber-only workflow, so barber test
 
 ## Pilot Exit Criteria
 
-- Users can log in reliably.
-- Daily sales can be entered without confusion.
-- Duplicate daily sale handling is understood.
-- Expenses and reports reconcile to user expectations.
-- No critical authorization or data-integrity issues are found.
+- users can log in reliably
+- daily sales can be entered without confusion
+- duplicate daily sale handling is understood
+- expenses and reports reconcile to user expectations
+- no critical authorization or data-integrity issues are found
 
 ## Recommended Deployment for Pilot
 
-- Use the Azure `dev` environment or a dedicated staging-like environment if available.
-- Seed only a demo or sanitized dataset initially.
-- If using live pilot data, back up the database before and after the pilot window.
-- If using the local Docker pilot path, run `./scripts/verify-docker-pilot.sh` before sharing the URL.
-- Use the browser smoke tests before granting pilot users access.
+- use a staging-like VPS, a temporary subdomain, or the local Docker pilot path
+- seed only a demo or sanitized dataset initially
+- if using live pilot data, back up the database before and after the pilot window
+- if using the local Docker pilot path, run `./scripts/verify-docker-pilot.sh` before sharing the URL
+- use the browser smoke tests before granting pilot users access

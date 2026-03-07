@@ -3,27 +3,27 @@
 ## Repository Guidance
 
 - Application runtime code lives in the Django apps under `apps/`.
-- Azure deployment assets live under `infra/`, `.github/workflows/`, `scripts/azure/`, and `docs/`.
+- Deployment and server operations assets live under the repository root, `scripts/`, `nginx/`, `ops/`, and `docs/`.
 - Keep application startup and migration execution separate. Do not reintroduce automatic migrations into the normal web startup path.
-- Treat Terraform state as sensitive because the stack generates and stores secret values in Key Vault.
-- Prefer updating Azure deployment behavior through Terraform and the reviewed shell scripts instead of ad hoc CLI commands.
+- Prefer updating deployment behavior through the reviewed shell scripts and checked-in server configuration rather than ad hoc operator commands.
 
 ## Deployment Baseline
 
-- Hosting target: Azure Container Apps
-- Registry: Azure Container Registry
-- Database: Azure Database for PostgreSQL Flexible Server
-- Secret source: Azure Key Vault
-- GitHub Azure auth: OIDC workload identity federation
+- Hosting target: Ubuntu 22.04 VPS
+- Web entrypoint: host `nginx`
+- TLS: `certbot` + Let's Encrypt
+- Runtime: Docker Compose
+- Database: PostgreSQL container
+- Secrets source: external server-side `.env` file
 
 ## When Changing CI/CD
 
-- Preserve OIDC-based Azure login. Do not introduce client secrets or publish profiles unless explicitly required.
-- Keep `dev` and `prod` environment separation intact.
-- Ensure migration execution remains an explicit step before the web revision update.
+- Keep CI focused on validation unless the user explicitly asks for deployment automation changes.
+- Do not introduce long-lived deployment secrets into GitHub unless explicitly required.
+- Ensure migration execution remains an explicit deployment step before the web service is restarted.
 
 ## When Changing Infrastructure
 
-- Maintain least-privilege role assignments for runtime and GitHub identities.
-- Document any new Azure service, new secret, or new environment variable in the relevant docs.
-- Keep `infra/README.md`, `docs/github-oidc-setup.md`, and `docs/operations-runbook.md` current with workflow changes.
+- Maintain the least-privilege host posture documented in `HARDENING.md`.
+- Document any new system package, DNS requirement, backup behavior, or environment variable in the relevant docs.
+- Keep `DEPLOYMENT.md`, `OPERATIONS.md`, `HARDENING.md`, and `docs/operations-runbook.md` current with workflow changes.

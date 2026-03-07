@@ -1,97 +1,80 @@
-# Azure Deployment Architecture
+# VPS Deployment Architecture
 
 ## Topology
 
-Smart Barber Shops uses a modular monolith application runtime deployed as a single web container on Azure Container Apps.
+Smart Barber Shops runs as a modular monolith on a single Ubuntu VPS.
 
-Core Azure resources per environment:
+Core components:
 
-- Resource Group
-- Azure Container Registry
-- Azure Container Apps Environment
-- Azure Container App `web`
-- Azure Container Apps Job `migrate`
-- Azure Database for PostgreSQL Flexible Server
-- Azure Key Vault
-- Azure Log Analytics Workspace
-- User-assigned managed identities for:
-  - application runtime
-  - GitHub Terraform automation
-  - GitHub deployment automation
+- host `nginx` for public ingress and TLS termination
+- Docker Compose service `web` for the Django application
+- Docker Compose service `db` for PostgreSQL
+- `shared/static` for collected static assets
+- `shared/media` for uploaded files and backup-adjacent persistence
+- host-level backup, rollback, and diagnostics scripts
 
 ## Resource Relationships
 
-1. GitHub Actions authenticates to Azure using OIDC and an environment-specific user-assigned managed identity.
-2. Terraform provisions Azure infrastructure and writes generated secrets into Key Vault.
-3. The runtime managed identity receives `AcrPull` and `Key Vault Secrets User`.
-4. The web container and migration job pull images from ACR and resolve Key Vault secrets at runtime.
-5. The application connects to PostgreSQL Flexible Server over TLS with `sslmode=require`.
-6. Container Apps emits platform/runtime logs into Log Analytics.
+1. Public HTTPS traffic reaches host `nginx`.
+2. `nginx` proxies the application to `127.0.0.1:8000`.
+3. The `web` container talks to PostgreSQL over the internal Docker network.
+4. Static files are collected into `shared/static` for direct serving.
+5. Media files persist in `shared/media`.
+6. Deployments, backups, and recovery actions are driven through reviewed shell scripts.
 
 ## Network and Security Posture
 
-- Web ingress is public through Container Apps external ingress by default, but Terraform can now disable external ingress for internal-only deployments.
-- TLS termination is handled by Azure Container Apps ingress.
-- Django trusts `X-Forwarded-Proto` so secure redirects and cookie behavior work correctly behind Azure ingress.
-- PostgreSQL Flexible Server is provisioned with public network access enabled for the MVP and a firewall rule that allows Azure services by default, but Terraform can now disable the public endpoint for private-network-ready environments.
-- Key Vault uses RBAC authorization instead of access policies.
-- Secrets are not stored in GitHub for Azure authentication.
-
-## Identity Flows
-
-### Runtime
-
-- Container App and migration job use the runtime managed identity.
-- The runtime identity pulls images from ACR.
-- The runtime identity resolves `DJANGO_SECRET_KEY`, `POSTGRES_PASSWORD`, `TELEGRAM_BOT_TOKEN`, and `WHATSAPP_ACCESS_TOKEN` from Key Vault.
-
-### Infrastructure Automation
-
-- The GitHub Terraform workflow uses the infra managed identity.
-- That identity applies Terraform, writes Key Vault secrets, and manages RBAC assignments in the environment resource group.
-
-### Release Automation
-
-- The GitHub deploy workflow uses the deploy managed identity.
-- That identity builds and pushes images to ACR, updates the migration job image, runs the migration job, and updates the web container image.
+- Only `22/tcp`, `80/tcp`, and `443/tcp` should be exposed on the host.
+- The Django app binds only to loopback on the host through Docker port publishing.
+- PostgreSQL is not published on a host port.
+- TLS is terminated by host `nginx` using Let's Encrypt certificates.
+- Production settings enforce secure cookies, SSL redirects, and trusted hosts/origins through the external env file.
 
 ## Runtime Configuration Flow
 
-1. Terraform provisions infrastructure and generates the Key Vault secret IDs referenced by Container Apps.
-2. The Container App template receives non-secret settings directly as environment variables.
-3. Secret environment variables reference named Container App secrets backed by Key Vault.
-4. At runtime, Azure resolves the secret values using the managed identity.
-5. The app exposes `/healthz/` for deployment verification.
-6. Appointment confirmation delivery uses non-secret runtime variables plus provider tokens from Key Vault.
+1. Server configuration is stored in `/opt/smartbarber/env/.env`.
+2. Docker Compose loads that env file into the `web` and `db` services.
+3. The deployment script validates required settings before making runtime changes.
+4. The app exposes `/healthz/` for local and public verification.
+5. Notification credentials are provided through the external env file, not source control.
 
 ## Release Sequence
 
-1. Build Docker image from the repository.
-2. Push immutable tag `${GITHUB_SHA}` to ACR.
-3. Update the migration job image to the same immutable tag.
-4. Run the migration job and wait for success.
-5. Update the web container image to the same immutable tag.
-6. Verify `https://<container-app-fqdn>/healthz/`.
+1. Optionally pull the latest git changes with `./deploy.sh --git-pull`.
+2. Optionally create a pre-deploy backup.
+3. Build the web image with Docker Compose.
+4. Start PostgreSQL and wait for readiness.
+5. Run `python manage.py check --deploy`.
+6. Run `python manage.py migrate --noinput`.
+7. Run `python manage.py collectstatic --noinput`.
+8. Start the web container and wait for `/healthz/`.
+9. Reload `nginx` if available and record the successful release marker.
 
 ## Rollback Sequence
 
-1. Select the previous known-good image tag in ACR.
-2. Re-run the deploy workflow with that tag or manually update the migration job and web app images.
-3. If the failed release included a backward-incompatible migration, perform database restore or operator-led rollback steps instead of image-only rollback.
+1. Use `./rollback.sh` to return to the previous successful release or a specific git ref.
+2. If required, restore the latest database backup with `./restore.sh` or `./scripts/restore-db.sh`.
+3. Re-run health checks and inspect logs before reopening access to users.
 
-## Custom Domains and Certificates
+## DNS and Certificates
 
-Custom domains are not fully automated in Terraform in this baseline. Recommended next-step flow:
+Recommended production naming:
 
-1. Validate the Container App ingress and final hostname.
-2. Create DNS CNAME or apex records per Azure Container Apps guidance.
-3. Bind the custom domain and managed certificate in Azure.
-4. Update `django_allowed_hosts` and `django_csrf_trusted_origins`.
+- `machinjiri.net`
+- `app.machinjiri.net`
+
+The expected flow is:
+
+1. Point the DNS records to the VPS.
+2. Install the bootstrap Nginx site.
+3. Issue certificates with `certbot`.
+4. Switch to the final HTTPS Nginx site.
+5. Confirm renewal with `sudo certbot renew --dry-run`.
 
 ## Future Hardening Paths
 
-- Private endpoints and private DNS for PostgreSQL and Key Vault
-- Azure Front Door or Application Gateway with WAF
-- Separate application database user and tighter DB grants
-- Secret rotation automation
-- Artifact signing and image provenance enforcement
+- Off-host backup automation and restore drills
+- Centralized log shipping and alerting
+- A dedicated staging environment
+- Separate application database credentials from the database superuser
+- Additional reverse-proxy controls such as rate limiting or WAF/CDN in front of the VPS

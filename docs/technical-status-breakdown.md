@@ -3,49 +3,49 @@
 ## Application Runtime
 
 - Django modular monolith with Django REST Framework
-- Server-rendered operational UI plus authenticated JSON APIs
+- server-rendered operational UI plus authenticated JSON APIs
 - PostgreSQL persistence with custom user model and shop-scoped authorization
 
 ## Functional Domains
 
 ### Core and Access Control
 
-- Custom `accounts.User` with role-based access
-- Per-shop access assignments
-- Active shop middleware and role/queryset mixins
-- Login throttling and security event logging
+- custom `accounts.User` with role-based access
+- per-shop access assignments
+- active shop middleware and role/queryset mixins
+- login throttling and security event logging
 
 ### Shop Operations
 
-- Shop management for platform admins
-- Barber, product, sale, and expense CRUD with validation and soft delete
-- Sale item snapshotting and commission calculation
+- shop management for platform admins
+- barber, product, sale, and expense CRUD with validation and soft delete
+- sale item snapshotting and commission calculation
 
 ### Appointments and Customers
 
-- New `appointments` app with `Customer` and `Appointment` models
-- Internal CRUD flows for customer records and appointments
-- Public booking UI and public booking API endpoint
-- Public availability UI and public availability API endpoint
+- `appointments` app with `Customer` and `Appointment` models
+- internal CRUD flows for customer records and appointments
+- public booking UI and public booking API endpoint
+- public availability UI and public availability API endpoint
 - WhatsApp and Telegram share helpers for availability and appointment messaging
-- Overlap validation for barber schedule conflicts
-- Demo seed data for upcoming appointments
+- overlap validation for barber schedule conflicts
+- demo seed data for upcoming appointments
 
 ### Reporting and Oversight
 
-- Dashboard metrics for sales, expenses, commissions, and now appointment visibility
-- Daily, weekly, monthly, top barber, commission, expense, net revenue, shop comparison, and product performance reporting
-- Audit log and security event capture
+- dashboard metrics for sales, expenses, commissions, and appointment visibility
+- daily, weekly, monthly, top barber, commission, expense, net revenue, shop comparison, and product performance reporting
+- audit log and security event capture
 
 ## Delivery and Infrastructure
 
-- Terraform-managed Azure baseline for Container Apps, ACR, PostgreSQL Flexible Server, Key Vault, monitoring, and identities
-- GitHub Actions OIDC for Terraform and deploy automation
-- Explicit migration job execution before web revision rollout
-- New Terraform toggles for Container App external ingress and PostgreSQL public-network exposure
+- single-VPS production baseline with host `nginx`, Docker Compose, PostgreSQL, and explicit deployment scripts
+- backup, restore, rollback, and diagnostics scripts for operator workflows
+- GitHub Actions CI for linting, tests, migrations, and container build validation
+- explicit migration and `collectstatic` execution before the web service is restarted
 
 ## Verification State
 
-- Django unit/API tests cover auth, authorization, barber/product/sale/expense rules, reporting, audit logging, and now customer/appointment/public-booking flows
-- Browser smoke covers login and navigation across customer and appointment screens in addition to the original modules
+- Django unit and API tests cover auth, authorization, barber/product/sale/expense rules, reporting, audit logging, and customer/appointment/public-booking flows
+- browser smoke covers login and navigation across customer and appointment screens in addition to the original modules
 - I could not execute the full Django test suite in this shell because the local virtualenv does not currently have Django installed
