@@ -62,6 +62,7 @@ Current delivery snapshots:
 - [Stakeholder status summary](/home/khido/projects/barbershop/docs/stakeholder-status-summary.md)
 - [Technical status breakdown](/home/khido/projects/barbershop/docs/technical-status-breakdown.md)
 - [Implementation roadmap](/home/khido/projects/barbershop/docs/implementation-roadmap.md)
+- [User roles guide](/home/khido/projects/barbershop/USER_ROLES.md)
 
 ## Azure Services Used
 

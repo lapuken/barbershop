@@ -196,6 +196,20 @@ class BaseAppTestCase(TestCase):
 
 
 class AuthAndAuthorizationTests(BaseAppTestCase):
+    def test_unauthenticated_appointments_redirect_to_login(self):
+        response = self.web_client.get(reverse("appointments:list"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_create_superuser_defaults_to_platform_admin_role(self):
+        User = get_user_model()
+        admin = User.objects.create_superuser(
+            username="bootstrapadmin",
+            email="bootstrapadmin@example.com",
+            password="StrongPass12345!",
+        )
+        self.assertEqual(admin.role, Roles.PLATFORM_ADMIN)
+
     def test_valid_login(self):
         response = self.web_client.post(
             reverse("accounts:login"),
