@@ -22,23 +22,30 @@ RUN_DIAGNOSTICS_ON_FAILURE="${RUN_DIAGNOSTICS_ON_FAILURE:-true}"
 RELEASES_DIR="${PROJECT_DIR}/logs/releases"
 LATEST_RELEASE_FILE="${RELEASES_DIR}/latest-successful-release.env"
 PREVIOUS_RELEASE_FILE="${RELEASES_DIR}/previous-successful-release.env"
+CLI_RELOAD_NGINX=""
+CLI_GIT_PULL_BEFORE_DEPLOY=""
+CLI_BACKUP_BEFORE_DEPLOY=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --git-pull)
       GIT_PULL_BEFORE_DEPLOY=true
+      CLI_GIT_PULL_BEFORE_DEPLOY=true
       shift
       ;;
     --skip-git-pull)
       GIT_PULL_BEFORE_DEPLOY=false
+      CLI_GIT_PULL_BEFORE_DEPLOY=false
       shift
       ;;
     --skip-backup)
       BACKUP_BEFORE_DEPLOY=false
+      CLI_BACKUP_BEFORE_DEPLOY=false
       shift
       ;;
     --no-nginx-reload)
       RELOAD_NGINX=false
+      CLI_RELOAD_NGINX=false
       shift
       ;;
     *)
@@ -105,7 +112,7 @@ placeholder_value() {
 
 env_bool() {
   case "${1:-false}" in
-    1|true|TRUE|yes|YES|on|ON)
+    1|[Tt][Rr][Uu][Ee]|[Yy][Ee][Ss]|[Oo][Nn])
       return 0
       ;;
   esac
@@ -319,6 +326,15 @@ if [[ ! -f "${COMPOSE_FILE}" ]]; then
 fi
 
 load_env
+if [[ -n "${CLI_RELOAD_NGINX}" ]]; then
+  RELOAD_NGINX="${CLI_RELOAD_NGINX}"
+fi
+if [[ -n "${CLI_GIT_PULL_BEFORE_DEPLOY}" ]]; then
+  GIT_PULL_BEFORE_DEPLOY="${CLI_GIT_PULL_BEFORE_DEPLOY}"
+fi
+if [[ -n "${CLI_BACKUP_BEFORE_DEPLOY}" ]]; then
+  BACKUP_BEFORE_DEPLOY="${CLI_BACKUP_BEFORE_DEPLOY}"
+fi
 validate_env
 prepare_directories
 git_pull_if_requested

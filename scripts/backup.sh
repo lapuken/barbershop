@@ -42,7 +42,7 @@ compose() {
 
 env_bool() {
   case "${1:-false}" in
-    1|true|TRUE|yes|YES|on|ON)
+    1|[Tt][Rr][Uu][Ee]|[Yy][Ee][Ss]|[Oo][Nn])
       return 0
       ;;
   esac
