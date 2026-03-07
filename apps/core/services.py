@@ -20,7 +20,9 @@ def get_accessible_shops(user):
         return Shop.objects.none()
     if user.role == Roles.PLATFORM_ADMIN:
         return Shop.objects.filter(is_active=True)
-    return Shop.objects.filter(user_accesses__user=user, user_accesses__is_active=True, is_active=True).distinct()
+    return Shop.objects.filter(
+        user_accesses__user=user, user_accesses__is_active=True, is_active=True
+    ).distinct()
 
 
 def get_shop_queryset_for_user(user):
@@ -84,7 +86,12 @@ def record_login_failure(identifier: str, ip_address: str, limit: int, window_se
         cache.set(key, 1, timeout=window_seconds)
         attempts = 1
     cache.touch(key, timeout=window_seconds)
-    log_security_event("login_failed", identifier=identifier, ip_address=ip_address, metadata={"attempts": attempts, "limit": limit})
+    log_security_event(
+        "login_failed",
+        identifier=identifier,
+        ip_address=ip_address,
+        metadata={"attempts": attempts, "limit": limit},
+    )
 
 
 def reset_login_failures(identifier: str, ip_address: str) -> None:
@@ -96,12 +103,16 @@ def authenticate_and_login(request, username: str, password: str):
     ip_address = request.META.get("REMOTE_ADDR", "")
     from django.conf import settings
 
-    if check_login_throttle(identifier, ip_address, settings.LOGIN_RATE_LIMIT, settings.LOGIN_RATE_WINDOW_SECONDS):
+    if check_login_throttle(
+        identifier, ip_address, settings.LOGIN_RATE_LIMIT, settings.LOGIN_RATE_WINDOW_SECONDS
+    ):
         return None, "Too many failed login attempts. Try again later."
 
     user = authenticate(request, username=username, password=password)
     if user is None or not user.is_active:
-        record_login_failure(identifier, ip_address, settings.LOGIN_RATE_LIMIT, settings.LOGIN_RATE_WINDOW_SECONDS)
+        record_login_failure(
+            identifier, ip_address, settings.LOGIN_RATE_LIMIT, settings.LOGIN_RATE_WINDOW_SECONDS
+        )
         return None, "Invalid credentials."
 
     reset_login_failures(identifier, ip_address)
@@ -112,5 +123,10 @@ def authenticate_and_login(request, username: str, password: str):
 
 def logout_user(request):
     if request.user.is_authenticated:
-        log_security_event("logout", actor=request.user, identifier=request.user.username, ip_address=request.META.get("REMOTE_ADDR", ""))
+        log_security_event(
+            "logout",
+            actor=request.user,
+            identifier=request.user.username,
+            ip_address=request.META.get("REMOTE_ADDR", ""),
+        )
     logout(request)

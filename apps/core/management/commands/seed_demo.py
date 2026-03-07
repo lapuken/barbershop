@@ -25,7 +25,12 @@ class Command(BaseCommand):
         User = get_user_model()
         admin, _ = User.objects.get_or_create(
             username="platformadmin",
-            defaults={"email": "admin@example.com", "role": Roles.PLATFORM_ADMIN, "is_staff": True, "is_superuser": True},
+            defaults={
+                "email": "admin@example.com",
+                "role": Roles.PLATFORM_ADMIN,
+                "is_staff": True,
+                "is_superuser": True,
+            },
         )
         admin.set_password("ChangeMe12345!")
         admin.save()
@@ -172,9 +177,25 @@ class Command(BaseCommand):
                 manager,
                 today,
                 [
-                    {"item_type": "service", "item_name_snapshot": "Haircut", "unit_price_snapshot": Decimal("28.00"), "quantity": 4},
-                    {"item_type": "service", "item_name_snapshot": "Beard Trim", "unit_price_snapshot": Decimal("18.00"), "quantity": 2},
-                    {"item_type": "product", "product": product_one, "item_name_snapshot": "", "unit_price_snapshot": Decimal("0.00"), "quantity": 2},
+                    {
+                        "item_type": "service",
+                        "item_name_snapshot": "Haircut",
+                        "unit_price_snapshot": Decimal("28.00"),
+                        "quantity": 4,
+                    },
+                    {
+                        "item_type": "service",
+                        "item_name_snapshot": "Beard Trim",
+                        "unit_price_snapshot": Decimal("18.00"),
+                        "quantity": 2,
+                    },
+                    {
+                        "item_type": "product",
+                        "product": product_one,
+                        "item_name_snapshot": "",
+                        "unit_price_snapshot": Decimal("0.00"),
+                        "quantity": 2,
+                    },
                 ],
             ),
             (
@@ -183,8 +204,19 @@ class Command(BaseCommand):
                 cashier,
                 today - timedelta(days=1),
                 [
-                    {"item_type": "service", "item_name_snapshot": "Haircut", "unit_price_snapshot": Decimal("26.00"), "quantity": 3},
-                    {"item_type": "product", "product": product_two, "item_name_snapshot": "", "unit_price_snapshot": Decimal("0.00"), "quantity": 1},
+                    {
+                        "item_type": "service",
+                        "item_name_snapshot": "Haircut",
+                        "unit_price_snapshot": Decimal("26.00"),
+                        "quantity": 3,
+                    },
+                    {
+                        "item_type": "product",
+                        "product": product_two,
+                        "item_name_snapshot": "",
+                        "unit_price_snapshot": Decimal("0.00"),
+                        "quantity": 1,
+                    },
                 ],
             ),
             (
@@ -193,8 +225,18 @@ class Command(BaseCommand):
                 manager,
                 today - timedelta(days=2),
                 [
-                    {"item_type": "service", "item_name_snapshot": "Haircut", "unit_price_snapshot": Decimal("28.00"), "quantity": 2},
-                    {"item_type": "service", "item_name_snapshot": "Hot Towel Shave", "unit_price_snapshot": Decimal("30.00"), "quantity": 1},
+                    {
+                        "item_type": "service",
+                        "item_name_snapshot": "Haircut",
+                        "unit_price_snapshot": Decimal("28.00"),
+                        "quantity": 2,
+                    },
+                    {
+                        "item_type": "service",
+                        "item_name_snapshot": "Hot Towel Shave",
+                        "unit_price_snapshot": Decimal("30.00"),
+                        "quantity": 1,
+                    },
                 ],
             ),
             (
@@ -203,8 +245,19 @@ class Command(BaseCommand):
                 owner_two,
                 today,
                 [
-                    {"item_type": "service", "item_name_snapshot": "Haircut", "unit_price_snapshot": Decimal("30.00"), "quantity": 3},
-                    {"item_type": "product", "product": product_three, "item_name_snapshot": "", "unit_price_snapshot": Decimal("0.00"), "quantity": 2},
+                    {
+                        "item_type": "service",
+                        "item_name_snapshot": "Haircut",
+                        "unit_price_snapshot": Decimal("30.00"),
+                        "quantity": 3,
+                    },
+                    {
+                        "item_type": "product",
+                        "product": product_three,
+                        "item_name_snapshot": "",
+                        "unit_price_snapshot": Decimal("0.00"),
+                        "quantity": 2,
+                    },
                 ],
             ),
         ]
@@ -225,9 +278,30 @@ class Command(BaseCommand):
 
         expense_rows = [
             (shop, today, "Supplies", "Clipper guards and combs", Decimal("42.00"), manager),
-            (shop, today - timedelta(days=1), "Utilities", "Laundry and electricity", Decimal("58.50"), manager),
-            (shop, today - timedelta(days=3), "Cleaning", "Shop cleaning services", Decimal("35.00"), cashier),
-            (shop_two, today, "Supplies", "Styling stock replenishment", Decimal("47.25"), owner_two),
+            (
+                shop,
+                today - timedelta(days=1),
+                "Utilities",
+                "Laundry and electricity",
+                Decimal("58.50"),
+                manager,
+            ),
+            (
+                shop,
+                today - timedelta(days=3),
+                "Cleaning",
+                "Shop cleaning services",
+                Decimal("35.00"),
+                cashier,
+            ),
+            (
+                shop_two,
+                today,
+                "Supplies",
+                "Styling stock replenishment",
+                Decimal("47.25"),
+                owner_two,
+            ),
         ]
 
         for expense_shop, expense_date, category, description, amount, actor in expense_rows:

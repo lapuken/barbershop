@@ -19,7 +19,11 @@ def capture_old_state(sender, instance, **kwargs):
     if sender not in AUDITED_MODELS or not instance.pk:
         return
     try:
-        old_instance = sender.all_objects.get(pk=instance.pk) if hasattr(sender, "all_objects") else sender.objects.get(pk=instance.pk)
+        old_instance = (
+            sender.all_objects.get(pk=instance.pk)
+            if hasattr(sender, "all_objects")
+            else sender.objects.get(pk=instance.pk)
+        )
     except sender.DoesNotExist:
         return
     instance._audit_old_values = snapshot_instance(old_instance)
@@ -31,7 +35,9 @@ def write_audit_save(sender, instance, created, **kwargs):
         return
     old_values = getattr(instance, "_audit_old_values", None)
     new_values = snapshot_instance(instance)
-    log_audit_event(instance, "create" if created else "update", old_values=old_values, new_values=new_values)
+    log_audit_event(
+        instance, "create" if created else "update", old_values=old_values, new_values=new_values
+    )
 
 
 @receiver(post_delete)

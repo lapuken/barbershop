@@ -37,7 +37,9 @@ class ProductCreateView(RoleRequiredMixin, ActiveShopRequiredMixin, CreateView):
         return kwargs
 
 
-class ProductUpdateView(RoleRequiredMixin, ShopScopedQuerysetMixin, ActiveShopRequiredMixin, UpdateView):
+class ProductUpdateView(
+    RoleRequiredMixin, ShopScopedQuerysetMixin, ActiveShopRequiredMixin, UpdateView
+):
     allowed_roles = Roles.MANAGEMENT
     model = Product
     form_class = ProductForm

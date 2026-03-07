@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from django.contrib.auth import get_user_model
 from rest_framework import permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -34,4 +33,6 @@ class LogoutAPIView(APIView):
 
 class DashboardReportView(APIView):
     def get(self, request):
-        return Response(build_dashboard_metrics(request.user, getattr(request, "active_shop", None)))
+        return Response(
+            build_dashboard_metrics(request.user, getattr(request, "active_shop", None))
+        )

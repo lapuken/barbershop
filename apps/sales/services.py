@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import transaction
 
@@ -23,7 +23,9 @@ def duplicate_sale_for(shop, barber, sale_date, exclude_sale_id=None):
 def recalculate_sale(sale: Sale) -> Sale:
     total = sum((item.line_total for item in sale.items.all()), Decimal("0.00"))
     sale.total_amount = quantize_money(total)
-    sale.commission_amount = quantize_money(sale.total_amount * sale.barber.commission_rate / Decimal("100"))
+    sale.commission_amount = quantize_money(
+        sale.total_amount * sale.barber.commission_rate / Decimal("100")
+    )
     sale.save(update_fields=["total_amount", "commission_amount", "updated_at"])
     return sale
 

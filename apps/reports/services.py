@@ -35,7 +35,9 @@ def _totals_for_period(user, start_date: date, end_date: date, shop=None):
     sales = _base_sales(user, shop=shop).filter(sale_date__range=(start_date, end_date))
     expenses = _base_expenses(user, shop=shop).filter(expense_date__range=(start_date, end_date))
     total_sales = sales.aggregate(total=Coalesce(Sum("total_amount"), Decimal("0.00")))["total"]
-    total_commissions = sales.aggregate(total=Coalesce(Sum("commission_amount"), Decimal("0.00")))["total"]
+    total_commissions = sales.aggregate(total=Coalesce(Sum("commission_amount"), Decimal("0.00")))[
+        "total"
+    ]
     total_expenses = expenses.aggregate(total=Coalesce(Sum("amount"), Decimal("0.00")))["total"]
     return {
         "start_date": start_date,
@@ -76,7 +78,14 @@ def daily_sales_summary(user, shop=None, day=None):
     data["sales"] = list(
         _base_sales(user, shop=shop)
         .filter(sale_date=day)
-        .values("id", "shop__name", "barber__full_name", "total_amount", "commission_amount", "sale_date")
+        .values(
+            "id",
+            "shop__name",
+            "barber__full_name",
+            "total_amount",
+            "commission_amount",
+            "sale_date",
+        )
         .order_by("barber__full_name")
     )
     return data
@@ -176,13 +185,18 @@ def product_performance_summary(user, shop=None, start_date=None, end_date=None)
         start_date = timezone.localdate().replace(day=1)
     if not end_date:
         end_date = timezone.localdate()
-    sale_items = SaleItem.objects.filter(sale__deleted_at__isnull=True, sale__sale_date__range=(start_date, end_date))
+    sale_items = SaleItem.objects.filter(
+        sale__deleted_at__isnull=True, sale__sale_date__range=(start_date, end_date)
+    )
     if user.role != Roles.PLATFORM_ADMIN:
         sale_items = sale_items.filter(sale__shop__in=get_accessible_shops(user))
     if shop:
         sale_items = sale_items.filter(sale__shop=shop)
     return list(
         sale_items.values("item_name_snapshot")
-        .annotate(quantity_sold=Coalesce(Sum("quantity"), 0), revenue=Coalesce(Sum("line_total"), Decimal("0.00")))
+        .annotate(
+            quantity_sold=Coalesce(Sum("quantity"), 0),
+            revenue=Coalesce(Sum("line_total"), Decimal("0.00")),
+        )
         .order_by("-revenue")
     )

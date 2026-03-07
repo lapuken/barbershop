@@ -14,7 +14,9 @@ class SaleViewSet(viewsets.ModelViewSet):
     permission_classes = [SalesRolePermission]
 
     def get_queryset(self):
-        queryset = Sale.objects.select_related("shop", "barber", "created_by", "updated_by").prefetch_related("items")
+        queryset = Sale.objects.select_related(
+            "shop", "barber", "created_by", "updated_by"
+        ).prefetch_related("items")
         if self.request.user.role == Roles.PLATFORM_ADMIN:
             return queryset
         return queryset.filter(shop__in=get_accessible_shops(self.request.user))
@@ -33,7 +35,10 @@ class SaleViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         if request.user.role not in Roles.MANAGEMENT and request.user.role != Roles.PLATFORM_ADMIN:
-            return Response({"detail": "You do not have permission to delete sales."}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"detail": "You do not have permission to delete sales."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         instance = self.get_object()
         instance.soft_delete(user=request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)

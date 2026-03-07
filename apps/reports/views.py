@@ -22,7 +22,9 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         shop = self.request.active_shop
-        context["filter_form"] = ReportFilterForm(self.request.GET or None, user=self.request.user, active_shop=shop)
+        context["filter_form"] = ReportFilterForm(
+            self.request.GET or None, user=self.request.user, active_shop=shop
+        )
         context["dashboard"] = build_dashboard_metrics(self.request.user, shop)
         context["daily"] = daily_sales_summary(self.request.user, shop)
         context["weekly"] = weekly_sales_summary(self.request.user, shop)

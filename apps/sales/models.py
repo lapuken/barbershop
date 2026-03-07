@@ -13,10 +13,16 @@ class Sale(ShopScopedModel, SoftDeleteModel):
     barber = models.ForeignKey("barbers.Barber", on_delete=models.PROTECT, related_name="sales")
     sale_date = models.DateField()
     total_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
-    commission_amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal("0.00"))
+    commission_amount = models.DecimalField(
+        max_digits=12, decimal_places=2, default=Decimal("0.00")
+    )
     notes = models.TextField(blank=True)
-    created_by = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="sales_created")
-    updated_by = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="sales_updated")
+    created_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="sales_created"
+    )
+    updated_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="sales_updated"
+    )
 
     class Meta:
         ordering = ["-sale_date", "barber__full_name"]
@@ -52,7 +58,13 @@ class SaleItem(TimeStampedModel):
 
     sale = models.ForeignKey("sales.Sale", on_delete=models.CASCADE, related_name="items")
     item_type = models.CharField(max_length=16, choices=ITEM_TYPE_CHOICES)
-    product = models.ForeignKey("products.Product", on_delete=models.PROTECT, null=True, blank=True, related_name="sale_items")
+    product = models.ForeignKey(
+        "products.Product",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="sale_items",
+    )
     item_name_snapshot = models.CharField(max_length=255)
     unit_price_snapshot = models.DecimalField(max_digits=12, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)

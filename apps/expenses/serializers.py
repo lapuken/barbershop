@@ -6,7 +6,9 @@ from apps.expenses.models import Expense
 
 class ExpenseSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
-        instance = self.instance or Expense(created_by=self.context["request"].user, updated_by=self.context["request"].user)
+        instance = self.instance or Expense(
+            created_by=self.context["request"].user, updated_by=self.context["request"].user
+        )
         for attr, value in attrs.items():
             setattr(instance, attr, value)
         try:

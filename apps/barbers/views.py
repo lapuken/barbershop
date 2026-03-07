@@ -1,7 +1,7 @@
 from django.contrib import messages
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, ListView, UpdateView, View
-from django.shortcuts import redirect, get_object_or_404
 
 from apps.barbers.forms import BarberForm
 from apps.barbers.models import Barber
@@ -37,7 +37,9 @@ class BarberCreateView(RoleRequiredMixin, ActiveShopRequiredMixin, CreateView):
         return kwargs
 
 
-class BarberUpdateView(RoleRequiredMixin, ShopScopedQuerysetMixin, ActiveShopRequiredMixin, UpdateView):
+class BarberUpdateView(
+    RoleRequiredMixin, ShopScopedQuerysetMixin, ActiveShopRequiredMixin, UpdateView
+):
     allowed_roles = Roles.MANAGEMENT
     model = Barber
     form_class = BarberForm

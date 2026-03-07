@@ -10,12 +10,22 @@ class AuditLogQuerySet(models.QuerySet):
             return self.none()
         if user.role == "platform_admin":
             return self
-        return self.filter(models.Q(shop__user_accesses__user=user) | models.Q(shop__isnull=True)).distinct()
+        return self.filter(
+            models.Q(shop__user_accesses__user=user) | models.Q(shop__isnull=True)
+        ).distinct()
 
 
 class AuditLog(models.Model):
-    shop = models.ForeignKey("shops.Shop", null=True, blank=True, on_delete=models.SET_NULL, related_name="audit_logs")
-    actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="audit_logs")
+    shop = models.ForeignKey(
+        "shops.Shop", null=True, blank=True, on_delete=models.SET_NULL, related_name="audit_logs"
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="audit_logs",
+    )
     event_type = models.CharField(max_length=64)
     entity_type = models.CharField(max_length=128)
     entity_id = models.CharField(max_length=64)
@@ -39,7 +49,13 @@ class AuditLog(models.Model):
 
 
 class SecurityEvent(models.Model):
-    actor = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL, related_name="security_events")
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="security_events",
+    )
     event_type = models.CharField(max_length=64)
     identifier = models.CharField(max_length=255, blank=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)

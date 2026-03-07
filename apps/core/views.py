@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import connections
 from django.http import JsonResponse
 from django.views import View

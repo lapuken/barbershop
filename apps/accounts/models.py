@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from django.contrib.auth.models import AbstractUser, UserManager as DjangoUserManager
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import UserManager as DjangoUserManager
 from django.core.exceptions import ValidationError
 from django.db import models
 
@@ -25,7 +26,9 @@ class User(AbstractUser):
 
 
 class UserShopAccess(TimeStampedModel):
-    user = models.ForeignKey("accounts.User", on_delete=models.CASCADE, related_name="shop_accesses")
+    user = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE, related_name="shop_accesses"
+    )
     shop = models.ForeignKey("shops.Shop", on_delete=models.CASCADE, related_name="user_accesses")
     is_active = models.BooleanField(default=True)
 

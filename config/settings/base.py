@@ -120,13 +120,14 @@ WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
 AUTH_USER_MODEL = "accounts.User"
 
-DATABASES = {
-    "default": database_config_from_env()
-}
+DATABASES = {"default": database_config_from_env()}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator", "OPTIONS": {"min_length": 12}},
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "OPTIONS": {"min_length": 12},
+    },
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
@@ -184,9 +185,7 @@ LOGGING = {
         "json": {
             "format": '{"time":"%(asctime)s","level":"%(levelname)s","name":"%(name)s","message":"%(message)s"}'
         },
-        "verbose": {
-            "format": "%(asctime)s %(levelname)s %(name)s %(message)s"
-        },
+        "verbose": {"format": "%(asctime)s %(levelname)s %(name)s %(message)s"},
     },
     "handlers": {
         "console": {
