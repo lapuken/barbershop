@@ -15,19 +15,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+        restart: true
     volumes:
       - ./shared/static:/app/staticfiles
       - ./shared/media:/app/media
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=5).read()\"",
-        ]
+      test: ["CMD", "/app/scripts/healthcheck.sh", "container"]
       interval: 30s
       timeout: 5s
       retries: 5
       start_period: 20s
+    stop_grace_period: 30s
     logging:
       driver: json-file
       options:
@@ -53,6 +51,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
     logging:
       driver: json-file
       options:

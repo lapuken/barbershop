@@ -22,9 +22,13 @@ Optional redirect target:
 Key deployment assets:
 
 - [DEPLOYMENT.md](/home/khido/projects/barbershop/DEPLOYMENT.md)
+- [OPERATIONS.md](/home/khido/projects/barbershop/OPERATIONS.md)
+- [HARDENING.md](/home/khido/projects/barbershop/HARDENING.md)
 - [docker-compose.yml](/home/khido/projects/barbershop/docker-compose.yml)
 - [deploy.sh](/home/khido/projects/barbershop/deploy.sh)
 - [backup.sh](/home/khido/projects/barbershop/backup.sh)
+- [rollback.sh](/home/khido/projects/barbershop/rollback.sh)
+- [restore.sh](/home/khido/projects/barbershop/restore.sh)
 - [nginx/app.machinjiri.net.bootstrap.conf](/home/khido/projects/barbershop/nginx/app.machinjiri.net.bootstrap.conf)
 - [nginx/app.machinjiri.net.conf](/home/khido/projects/barbershop/nginx/app.machinjiri.net.conf)
 - [docs/operations-runbook.md](/home/khido/projects/barbershop/docs/operations-runbook.md)

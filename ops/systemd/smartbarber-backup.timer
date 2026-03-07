@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Smart Barber Shops daily backup
+
+[Timer]
+OnCalendar=*-*-* 02:15:00
+Persistent=true
+Unit=smartbarber-backup.service
+
+[Install]
+WantedBy=timers.target

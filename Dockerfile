@@ -16,7 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN chmod +x /app/docker/entrypoint.sh /app/docker/start-web.sh /app/docker/start-migrate.sh
+RUN find /app/docker /app/scripts -maxdepth 1 -type f -name '*.sh' -exec chmod +x {} + \
+    && chmod +x /app/deploy.sh /app/backup.sh /app/rollback.sh /app/restore.sh
 RUN addgroup --system app && adduser --system --ingroup app app \
     && mkdir -p /app/staticfiles /app/media \
     && chown -R app:app /app

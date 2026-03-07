@@ -1,0 +1,13 @@
+[Unit]
+Description=Smart Barber Shops Docker cleanup job
+Wants=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+User=barberadmin
+Group=barberadmin
+WorkingDirectory=/opt/smartbarber/app
+Environment=PRUNE_UNTIL=168h
+ExecStart=/opt/smartbarber/app/scripts/prune-docker.sh
+

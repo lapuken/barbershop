@@ -1,9 +1,23 @@
 # Smart Barber Shops VPS Deployment Runbook
 
-## Phase 1 — Verify Server Prerequisites
+## Deployment Model
+
+- Host OS: Ubuntu 22.04
+- Reverse proxy: host `nginx`
+- TLS: Let's Encrypt with `certbot`
+- Application runtime: Docker Compose
+- Services: `web` and `db`
+- Public app URL: `https://app.machinjiri.net`
+- Apex redirect: `https://machinjiri.net` -> `https://app.machinjiri.net`
+
+The `web` container exposes only `127.0.0.1:8000` on the VPS. PostgreSQL stays on the Docker network only.
+
+## Server Prerequisites
 
 ```bash
 ssh barberadmin@66.42.115.59
+sudo apt update
+sudo apt install -y git certbot python3-certbot-nginx
 docker version
 docker compose version
 sudo systemctl status nginx --no-pager
@@ -12,7 +26,7 @@ df -h
 free -h
 ```
 
-## Phase 2 — Create Production Directory Structure
+## Production Layout
 
 ```bash
 sudo install -d -o barberadmin -g barberadmin -m 0755 /opt/smartbarber
@@ -24,7 +38,7 @@ sudo install -d -o www-data -g adm -m 0775 /opt/smartbarber/logs/nginx
 sudo install -d -o barberadmin -g barberadmin -m 0755 /var/www/certbot
 ```
 
-## Phase 3 — Clone the Repository
+## Clone the Repository
 
 ```bash
 git clone https://github.com/lapuken/barbershop.git /opt/smartbarber/app
@@ -33,83 +47,52 @@ cd /opt/smartbarber/app
 git branch --show-current
 ```
 
-## Phase 4 — Configure Environment Variables
+## Configure Environment
 
 ```bash
-cat > /opt/smartbarber/env/.env <<'EOF'
-APP_ENV=production
-APP_DOMAIN=app.machinjiri.net
-SECRET_KEY=REPLACE_WITH_LONG_RANDOM_SECRET
-DATABASE_URL=
-REDIS_URL=
-ALLOWED_HOSTS=app.machinjiri.net,machinjiri.net,127.0.0.1,localhost
-CSRF_TRUSTED_ORIGINS=https://app.machinjiri.net,https://machinjiri.net
-ROOT_DOMAIN=machinjiri.net
-LETSENCRYPT_EMAIL=YOUR_EMAIL@example.com
-APP_PORT=8000
-APP_UID=1000
-APP_GID=1000
-DJANGO_SETTINGS_MODULE=config.settings.prod
-DJANGO_SECRET_KEY=REPLACE_WITH_LONG_RANDOM_SECRET
-DJANGO_DEBUG=False
-DJANGO_ALLOWED_HOSTS=app.machinjiri.net,machinjiri.net,127.0.0.1,localhost
-DJANGO_CSRF_TRUSTED_ORIGINS=https://app.machinjiri.net,https://machinjiri.net
-DJANGO_LOG_LEVEL=INFO
-APP_TIME_ZONE=Africa/Blantyre
-POSTGRES_DB=smartbarber
-POSTGRES_USER=smartbarber
-POSTGRES_PASSWORD=REPLACE_WITH_STRONG_DB_PASSWORD
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
-POSTGRES_SSLMODE=disable
-POSTGRES_CONN_MAX_AGE=60
-SESSION_COOKIE_AGE=3600
-LOGIN_RATE_LIMIT=5
-LOGIN_RATE_WINDOW_SECONDS=900
-SECURE_SSL_REDIRECT=True
-SESSION_COOKIE_SECURE=True
-CSRF_COOKIE_SECURE=True
-SECURE_HSTS_SECONDS=31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS=True
-SECURE_HSTS_PRELOAD=True
-MFA_READY=False
-APP_RELEASE_SHA=manual
-RUN_COLLECTSTATIC=False
-GUNICORN_WORKERS=2
-GUNICORN_TIMEOUT=60
-PORT=8000
-TZ=Africa/Blantyre
-DJANGO_SUPERUSER_USERNAME=
-DJANGO_SUPERUSER_EMAIL=
-DJANGO_SUPERUSER_PASSWORD=
-WHATSAPP_ACCESS_TOKEN=
-WHATSAPP_PHONE_NUMBER_ID=
-WHATSAPP_API_BASE_URL=https://graph.facebook.com
-WHATSAPP_API_VERSION=v21.0
-TELEGRAM_BOT_TOKEN=
-TELEGRAM_API_BASE_URL=https://api.telegram.org
-APPOINTMENT_NOTIFICATION_TIMEOUT_SECONDS=10
-EOF
+cp /opt/smartbarber/app/.env.example /opt/smartbarber/env/.env
 chmod 600 /opt/smartbarber/env/.env
-nano /opt/smartbarber/env/.env
 id -u barberadmin
 id -g barberadmin
 openssl rand -base64 48
+nano /opt/smartbarber/env/.env
 ```
 
-## Phase 5 — Build and Start Containers
+Required values to replace:
+
+- `LETSENCRYPT_EMAIL`
+- `DJANGO_SECRET_KEY`
+- `POSTGRES_PASSWORD`
+- `APP_UID`
+- `APP_GID`
+- optional `DJANGO_SUPERUSER_USERNAME`
+- optional `DJANGO_SUPERUSER_EMAIL`
+- optional `DJANGO_SUPERUSER_PASSWORD`
+
+Important deployment defaults already included in `.env.example`:
+
+- `DJANGO_SETTINGS_MODULE=config.settings.prod`
+- `DJANGO_DEBUG=False`
+- `SECURE_SSL_REDIRECT=True`
+- `SESSION_COOKIE_SECURE=True`
+- `CSRF_COOKIE_SECURE=True`
+- `BACKUP_BEFORE_DEPLOY=true`
+- `BACKUP_RETENTION_DAYS=14`
+- `RUN_DIAGNOSTICS_ON_FAILURE=true`
+
+## First Deploy
+
+Run the deployment script. It validates the env file, optionally creates a pre-deploy backup, builds the image, starts PostgreSQL, runs `check --deploy`, runs migrations, collects static files, starts the web container, verifies health, and exits nonzero on failure.
 
 ```bash
 cd /opt/smartbarber/app
-docker compose --env-file /opt/smartbarber/env/.env build
 ./deploy.sh
 docker compose --env-file /opt/smartbarber/env/.env ps
-docker compose --env-file /opt/smartbarber/env/.env logs --tail=200 web db
 ```
 
-## Phase 6 — Configure Nginx Reverse Proxy
+## Nginx and TLS
 
-Bootstrap config:
+Install the bootstrap site first:
 
 ```bash
 sudo cp /opt/smartbarber/app/nginx/app.machinjiri.net.bootstrap.conf /etc/nginx/sites-available/smartbarber
@@ -119,111 +102,149 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-Final HTTPS config after certificates:
-
-```bash
-sudo cp /opt/smartbarber/app/nginx/app.machinjiri.net.conf /etc/nginx/sites-available/smartbarber
-sudo nginx -t
-sudo systemctl reload nginx
-```
-
-## Phase 7 — Install SSL Certificates
-
-```bash
-sudo certbot --nginx -d machinjiri.net -d app.machinjiri.net
-```
-
-Choose this when prompted:
-
-```text
-2: Redirect - Make all requests redirect to secure HTTPS access
-```
-
-If you want the repo-managed Nginx config to remain the source of truth, use this instead:
+Issue certificates:
 
 ```bash
 sudo certbot certonly --webroot --cert-name app.machinjiri.net -w /var/www/certbot -d app.machinjiri.net -d machinjiri.net -m YOUR_EMAIL@example.com --agree-tos --no-eff-email
+```
+
+Install the final HTTPS site:
+
+```bash
 sudo cp /opt/smartbarber/app/nginx/app.machinjiri.net.conf /etc/nginx/sites-available/smartbarber
 sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-## Phase 8 — Database Migrations and Startup
+Verify renewal:
 
 ```bash
-cd /opt/smartbarber/app
-docker compose --env-file /opt/smartbarber/env/.env run --rm --no-deps -e RUN_COLLECTSTATIC=false web python manage.py migrate --noinput
-docker compose --env-file /opt/smartbarber/env/.env run --rm --no-deps -e RUN_COLLECTSTATIC=false web python manage.py collectstatic --noinput
-docker compose --env-file /opt/smartbarber/env/.env up -d web
-./scripts/create-initial-admin.sh
-curl http://127.0.0.1:8000/healthz/
-curl -I https://app.machinjiri.net/healthz/
-```
-
-## Phase 9 — Operations and Monitoring
-
-Restart services:
-
-```bash
-cd /opt/smartbarber/app
-docker compose --env-file /opt/smartbarber/env/.env restart web db
-sudo systemctl reload nginx
-```
-
-View logs:
-
-```bash
-cd /opt/smartbarber/app
-docker compose --env-file /opt/smartbarber/env/.env logs -f web db
-sudo tail -f /opt/smartbarber/logs/nginx/app.machinjiri.net.access.log /opt/smartbarber/logs/nginx/app.machinjiri.net.error.log
-```
-
-Check health:
-
-```bash
-cd /opt/smartbarber/app
-docker compose --env-file /opt/smartbarber/env/.env ps
-curl http://127.0.0.1:8000/healthz/
-curl -I https://app.machinjiri.net/healthz/
-sudo nginx -t
-sudo systemctl status nginx --no-pager
 sudo certbot renew --dry-run
 ```
 
-## Phase 10 — Backup Strategy
-
-Create backups:
+## Initial Admin User
 
 ```bash
 cd /opt/smartbarber/app
-./backup.sh
-./scripts/backup-db.sh
-ls -lah /opt/smartbarber/backups
+./scripts/create-initial-admin.sh
 ```
 
-Restore database:
+If `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL`, and `DJANGO_SUPERUSER_PASSWORD` are set in `/opt/smartbarber/env/.env`, the script runs non-interactively. Otherwise it falls back to interactive `createsuperuser`.
+
+## Validation
 
 ```bash
 cd /opt/smartbarber/app
-./scripts/restore-db.sh /opt/smartbarber/backups/<timestamp>/database.dump
-```
-
-Restore media files:
-
-```bash
-sudo rm -rf /opt/smartbarber/app/shared/media
-sudo mkdir -p /opt/smartbarber/app/shared
-sudo tar -xzf /opt/smartbarber/backups/<timestamp>/media.tar.gz -C /opt/smartbarber/app/shared
-sudo chown -R barberadmin:barberadmin /opt/smartbarber/app/shared/media
-sudo systemctl reload nginx
+./scripts/healthcheck.sh local
+./scripts/healthcheck.sh public
+docker compose --env-file /opt/smartbarber/env/.env ps
+docker compose --env-file /opt/smartbarber/env/.env logs --tail=100 web db
+sudo nginx -t
 ```
 
 ## Repeat Deploy
 
 ```bash
 cd /opt/smartbarber/app
-git pull --ff-only
-./deploy.sh
-docker compose --env-file /opt/smartbarber/env/.env ps
-curl -I https://app.machinjiri.net/healthz/
+./deploy.sh --git-pull
+./scripts/healthcheck.sh full
 ```
+
+Skip the automatic pre-deploy backup only if you have a confirmed recent backup:
+
+```bash
+cd /opt/smartbarber/app
+./deploy.sh --git-pull --skip-backup
+```
+
+## Rollback
+
+Roll back to the previous successful release:
+
+```bash
+cd /opt/smartbarber/app
+./rollback.sh
+```
+
+Roll back to a specific git ref:
+
+```bash
+cd /opt/smartbarber/app
+./rollback.sh <git-ref>
+```
+
+## Backups and Restore
+
+Create a timestamped backup set:
+
+```bash
+cd /opt/smartbarber/app
+./backup.sh
+ls -lah /opt/smartbarber/backups
+```
+
+Restore a full backup set:
+
+```bash
+cd /opt/smartbarber/app
+./restore.sh /opt/smartbarber/backups/<timestamp>
+```
+
+Restore only the database:
+
+```bash
+cd /opt/smartbarber/app
+./scripts/restore-db.sh /opt/smartbarber/backups/<timestamp>/database.dump
+```
+
+## Scheduled Maintenance
+
+Install the daily backup timer:
+
+```bash
+sudo cp /opt/smartbarber/app/ops/systemd/smartbarber-backup.service /etc/systemd/system/
+sudo cp /opt/smartbarber/app/ops/systemd/smartbarber-backup.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now smartbarber-backup.timer
+```
+
+Install the weekly Docker prune timer:
+
+```bash
+sudo cp /opt/smartbarber/app/ops/systemd/smartbarber-prune.service /etc/systemd/system/
+sudo cp /opt/smartbarber/app/ops/systemd/smartbarber-prune.timer /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now smartbarber-prune.timer
+```
+
+Install log rotation for custom Nginx logs:
+
+```bash
+sudo cp /opt/smartbarber/app/ops/logrotate/smartbarber-nginx /etc/logrotate.d/smartbarber-nginx
+sudo logrotate -d /etc/logrotate.d/smartbarber-nginx
+```
+
+## Diagnostics and Troubleshooting
+
+Collect a full on-host snapshot:
+
+```bash
+cd /opt/smartbarber/app
+./scripts/diagnostics.sh --tail 150
+```
+
+Common checks:
+
+```bash
+cd /opt/smartbarber/app
+docker compose --env-file /opt/smartbarber/env/.env logs --tail=200 web db
+sudo tail -n 200 /opt/smartbarber/logs/nginx/app.machinjiri.net.error.log
+sudo ss -tulpn | grep -E ':80|:443|:8000|:5432'
+df -h
+docker system df
+```
+
+For the ongoing operator workflow, use:
+
+- [`OPERATIONS.md`](/home/khido/projects/barbershop/OPERATIONS.md)
+- [`HARDENING.md`](/home/khido/projects/barbershop/HARDENING.md)

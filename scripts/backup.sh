@@ -16,6 +16,8 @@ fi
 ENV_FILE="${ENV_FILE:-${DEFAULT_ENV_FILE}}"
 COMPOSE_FILE="${COMPOSE_FILE:-${ROOT_DIR}/docker-compose.yml}"
 BACKUP_DIR="${BACKUP_DIR:-${DEFAULT_BACKUP_DIR}}"
+BACKUP_RETENTION_DAYS="${BACKUP_RETENTION_DAYS:-14}"
+BACKUP_ARCHIVE="${BACKUP_ARCHIVE:-false}"
 
 compose_cmd() {
   if docker compose version >/dev/null 2>&1; then
@@ -36,6 +38,15 @@ compose() {
   else
     docker-compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" "$@"
   fi
+}
+
+env_bool() {
+  case "${1:-false}" in
+    1|true|TRUE|yes|YES|on|ON)
+      return 0
+      ;;
+  esac
+  return 1
 }
 
 wait_for_db() {
@@ -98,5 +109,16 @@ metadata_file="${backup_set_dir}/metadata.txt"
   echo "git_sha=$(git rev-parse HEAD 2>/dev/null || echo unavailable)"
 } > "${metadata_file}"
 chmod 600 "${metadata_file}"
+
+if env_bool "${BACKUP_ARCHIVE}"; then
+  archive_file="${BACKUP_DIR}/smartbarber-${timestamp}.tar.gz"
+  echo "Creating archive: ${archive_file}"
+  tar -C "${BACKUP_DIR}" -czf "${archive_file}" "${timestamp}"
+  chmod 600 "${archive_file}"
+fi
+
+if [[ "${BACKUP_RETENTION_DAYS}" =~ ^[0-9]+$ ]] && [[ "${BACKUP_RETENTION_DAYS}" -gt 0 ]]; then
+  RETENTION_DAYS="${BACKUP_RETENTION_DAYS}" BACKUP_DIR="${BACKUP_DIR}" "${ROOT_DIR}/scripts/cleanup-backups.sh"
+fi
 
 echo "Backup complete: ${backup_set_dir}"
