@@ -2,5 +2,5 @@
 
 The VPS operations guide now lives in the repository root:
 
-- [`OPERATIONS.md`](/home/khido/projects/barbershop/OPERATIONS.md)
-- [`DEPLOYMENT.md`](/home/khido/projects/barbershop/DEPLOYMENT.md)
+- [`OPERATIONS.md`](../OPERATIONS.md)
+- [`DEPLOYMENT.md`](../DEPLOYMENT.md)

@@ -108,7 +108,7 @@ For the Docker pilot path, run this verifier before sharing the URL:
 
 ## Browser Smoke Coverage
 
-The browser-driven smoke suite in [test_ui_smoke.py](/home/khido/projects/barbershop/tests/browser/test_ui_smoke.py#L1) covers:
+The browser-driven smoke suite in [test_ui_smoke.py](tests/browser/test_ui_smoke.py#L1) covers:
 
 - login through the real browser UI
 - navigation to customers and appointments
@@ -127,4 +127,4 @@ After `seed_demo` runs successfully:
 
 ## Pilot Recommendation
 
-For barber testing, use the checklist in [barber-pilot-test-plan.md](/home/khido/projects/barbershop/docs/barber-pilot-test-plan.md#L1) and run at least one browser smoke pass before sharing the URL with pilot users.
+For barber testing, use the checklist in [barber-pilot-test-plan.md](docs/barber-pilot-test-plan.md#L1) and run at least one browser smoke pass before sharing the URL with pilot users.
