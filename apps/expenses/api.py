@@ -33,7 +33,10 @@ class ExpenseViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         if request.user.role not in Roles.MANAGEMENT and request.user.role != Roles.PLATFORM_ADMIN:
-            return Response({"detail": "You do not have permission to delete expenses."}, status=status.HTTP_403_FORBIDDEN)
+            return Response(
+                {"detail": "You do not have permission to delete expenses."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         instance = self.get_object()
         instance.soft_delete(user=request.user)
         return Response(status=status.HTTP_204_NO_CONTENT)

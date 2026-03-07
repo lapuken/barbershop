@@ -12,7 +12,9 @@ except ModuleNotFoundError:  # pragma: no cover - optional dependency
     sync_playwright = None
 
 
-@unittest.skipIf(sync_playwright is None, "Playwright is not installed. Install requirements-smoke.txt first.")
+@unittest.skipIf(
+    sync_playwright is None, "Playwright is not installed. Install requirements-smoke.txt first."
+)
 class BrowserSmokeTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

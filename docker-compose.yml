@@ -1,68 +1,62 @@
-services:
-  db:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-smart_barber_shops}
-      POSTGRES_USER: ${POSTGRES_USER:-smart_barber}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smart_barber}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smart_barber} -d ${POSTGRES_DB:-smart_barber_shops}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+name: smart-barber-shops
 
+services:
   web:
-    build: .
-    environment:
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE:-config.settings.dev}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-in-production}
-      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
-      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
-      DJANGO_CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://localhost,http://127.0.0.1}
-      DJANGO_LOG_LEVEL: ${DJANGO_LOG_LEVEL:-INFO}
-      APP_TIME_ZONE: ${APP_TIME_ZONE:-America/New_York}
-      POSTGRES_DB: ${POSTGRES_DB:-smart_barber_shops}
-      POSTGRES_USER: ${POSTGRES_USER:-smart_barber}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smart_barber}
-      POSTGRES_HOST: ${POSTGRES_HOST:-db}
-      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
-      POSTGRES_SSLMODE: ${POSTGRES_SSLMODE:-prefer}
-      POSTGRES_CONN_MAX_AGE: ${POSTGRES_CONN_MAX_AGE:-60}
-      SESSION_COOKIE_AGE: ${SESSION_COOKIE_AGE:-3600}
-      LOGIN_RATE_LIMIT: ${LOGIN_RATE_LIMIT:-5}
-      LOGIN_RATE_WINDOW_SECONDS: ${LOGIN_RATE_WINDOW_SECONDS:-900}
-      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
-      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-False}
-      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-False}
-      SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-31536000}
-      SECURE_HSTS_INCLUDE_SUBDOMAINS: ${SECURE_HSTS_INCLUDE_SUBDOMAINS:-True}
-      SECURE_HSTS_PRELOAD: ${SECURE_HSTS_PRELOAD:-True}
-      MFA_READY: ${MFA_READY:-False}
-      APP_RELEASE_SHA: ${APP_RELEASE_SHA:-local}
-      PORT: ${PORT:-8000}
-      RUN_COLLECTSTATIC: ${RUN_COLLECTSTATIC:-true}
+    build:
+      context: .
+    restart: unless-stopped
+    init: true
+    user: "${APP_UID:-1000}:${APP_GID:-1000}"
+    env_file:
+      - ${ENV_FILE_PATH:-.env}
+    command: ["/app/docker/start-web.sh"]
+    ports:
+      - "127.0.0.1:${APP_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
+        restart: true
     volumes:
-      - .:/app
-      - static_volume:/app/staticfiles
-      - media_volume:/app/media
+      - ./shared/static:/app/staticfiles
+      - ./shared/media:/app/media
+    healthcheck:
+      test: ["CMD", "/app/scripts/healthcheck.sh", "container"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
 
-  nginx:
-    image: nginx:1.27-alpine
-    depends_on:
-      - web
-    ports:
-      - "80:80"
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-smartbarber}
+      POSTGRES_USER: ${POSTGRES_USER:-smartbarber}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-replace_me}
+      POSTGRES_INITDB_ARGS: --auth-host=scram-sha-256
+      TZ: ${TZ:-UTC}
+      PGTZ: ${TZ:-UTC}
     volumes:
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - static_volume:/app/staticfiles:ro
-      - media_volume:/app/media:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-smartbarber} -d ${POSTGRES_DB:-smartbarber}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
-  static_volume:
-  media_volume:

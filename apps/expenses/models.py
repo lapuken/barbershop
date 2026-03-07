@@ -19,8 +19,12 @@ class Expense(ShopScopedModel, SoftDeleteModel):
         blank=True,
         validators=[FileExtensionValidator(["pdf", "jpg", "jpeg", "png"])],
     )
-    created_by = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="expenses_created")
-    updated_by = models.ForeignKey("accounts.User", on_delete=models.PROTECT, related_name="expenses_updated")
+    created_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="expenses_created"
+    )
+    updated_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="expenses_updated"
+    )
 
     class Meta:
         ordering = ["-expense_date", "-created_at"]

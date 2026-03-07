@@ -12,7 +12,10 @@ class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     allowed_roles = set()
 
     def test_func(self):
-        return self.request.user.role == Roles.PLATFORM_ADMIN or self.request.user.role in self.allowed_roles
+        return (
+            self.request.user.role == Roles.PLATFORM_ADMIN
+            or self.request.user.role in self.allowed_roles
+        )
 
     def handle_no_permission(self):
         if not self.request.user.is_authenticated:
@@ -22,6 +25,8 @@ class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 
 class ActiveShopRequiredMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
         if request.user.role != Roles.PLATFORM_ADMIN and request.active_shop is None:
             messages.error(request, "Select a shop first.")
             raise PermissionDenied

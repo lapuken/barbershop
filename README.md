@@ -1,59 +1,82 @@
 # Smart Barber Shops
 
-Smart Barber Shops is a Django-based multi-branch barber shop operations platform. This repository now includes a production-oriented Azure deployment baseline built around Azure Container Apps, Azure Container Registry, Azure Database for PostgreSQL Flexible Server, Azure Key Vault, Terraform, and GitHub Actions using OpenID Connect.
+Smart Barber Shops is a Django-based multi-branch barber shop operations platform.
+
+## Production Deployment
+
+This repository includes a production deployment path for a single Ubuntu 22.04 VPS using:
+
+- host `nginx` for reverse proxy and TLS termination
+- `certbot` + Let's Encrypt for certificates
+- Docker Compose for the Django web app and PostgreSQL
+- a host-mounted `shared/static` directory for direct static serving
+- a host-mounted `shared/media` directory for persistent uploads and backups
+
+Target hostname for this path:
+
+- `app.machinjiri.net`
+
+Optional redirect target:
+
+- `machinjiri.net` -> `https://app.machinjiri.net`
+
+Key deployment assets:
+
+- [DEPLOYMENT.md](/home/khido/projects/barbershop/DEPLOYMENT.md)
+- [OPERATIONS.md](/home/khido/projects/barbershop/OPERATIONS.md)
+- [HARDENING.md](/home/khido/projects/barbershop/HARDENING.md)
+- [docker-compose.yml](/home/khido/projects/barbershop/docker-compose.yml)
+- [deploy.sh](/home/khido/projects/barbershop/deploy.sh)
+- [backup.sh](/home/khido/projects/barbershop/backup.sh)
+- [rollback.sh](/home/khido/projects/barbershop/rollback.sh)
+- [restore.sh](/home/khido/projects/barbershop/restore.sh)
+- [nginx/app.machinjiri.net.bootstrap.conf](/home/khido/projects/barbershop/nginx/app.machinjiri.net.bootstrap.conf)
+- [nginx/app.machinjiri.net.conf](/home/khido/projects/barbershop/nginx/app.machinjiri.net.conf)
+- [docs/architecture.md](/home/khido/projects/barbershop/docs/architecture.md)
+- [docs/deployment-checklist.md](/home/khido/projects/barbershop/docs/deployment-checklist.md)
+- [docs/operations-runbook.md](/home/khido/projects/barbershop/docs/operations-runbook.md)
+- [docs/security-hardening.md](/home/khido/projects/barbershop/docs/security-hardening.md)
+
+System assumptions for the single-VPS path:
+
+- one VPS hosts Nginx, the Django app container, and the PostgreSQL container
+- only `80/tcp` and `443/tcp` are exposed publicly
+- the app container binds only to `127.0.0.1:8000`
+- `.env` exists only on the server and is never committed
+- PostgreSQL persists in a named Docker volume
+- uploaded files live under `shared/media/` and should be included in backups
 
 ## Architecture Overview
 
 - Application runtime: Django + Django REST Framework in a Docker container
-- Hosting: Azure Container Apps
-- Image registry: Azure Container Registry
-- Database: Azure Database for PostgreSQL Flexible Server
-- Secret storage: Azure Key Vault
-- Identity: user-assigned managed identities for runtime, GitHub Terraform, and GitHub deployment
-- Monitoring: Log Analytics connected to the Container Apps environment
-- Infrastructure as Code: Terraform
-- CI/CD: GitHub Actions with workload identity federation
-
-Detailed deployment architecture is documented in [docs/architecture.md](/home/khido/projects/barbershop/docs/architecture.md).
+- Web ingress: host `nginx` terminating TLS and proxying to `127.0.0.1:8000`
+- Database: PostgreSQL in Docker Compose on the internal Docker network
+- Static files: collected into `shared/static`
+- Media files: persisted in `shared/media`
+- Deployment: reviewed shell scripts with explicit backup, migration, and health-check steps
+- CI: GitHub Actions runs linting, tests, migrations, and container build validation
 
 Current delivery snapshots:
 
 - [Stakeholder status summary](/home/khido/projects/barbershop/docs/stakeholder-status-summary.md)
 - [Technical status breakdown](/home/khido/projects/barbershop/docs/technical-status-breakdown.md)
 - [Implementation roadmap](/home/khido/projects/barbershop/docs/implementation-roadmap.md)
-
-## Azure Services Used
-
-- Azure Resource Group
-- Azure Container Registry
-- Azure Container Apps Environment
-- Azure Container App for the web workload
-- Azure Container Apps Job for Django migrations
-- Azure Database for PostgreSQL Flexible Server
-- Azure Key Vault
-- Azure Log Analytics Workspace
-- Microsoft Entra workload identity federation for GitHub Actions
+- [User roles guide](/home/khido/projects/barbershop/USER_ROLES.md)
 
 ## Prerequisites
 
-Local:
+Local development:
 
 - Python 3.12
 - Docker
-- Terraform 1.6+
-- Azure CLI
-- Access to the target Azure subscription and tenant
 
-GitHub:
+Server deployment:
 
-- GitHub repository environments named `dev` and `prod`
-- Environment variables populated from Terraform outputs and environment-specific configuration
-- Optional protection rules for the `prod` environment
-
-Azure:
-
-- A subscription admin or platform admin for the initial bootstrap
-- Remote state storage account and blob container for Terraform state
+- Ubuntu 22.04
+- Docker Engine with Docker Compose
+- Nginx
+- Certbot
+- SSH access to the target server
 
 ## Fastest Local App Test
 
@@ -67,7 +90,7 @@ python manage.py runserver 0.0.0.0:8000
 
 That script will:
 
-- copy `.env.example` to `.env` if needed
+- copy `.env.local.example` to `.env` if needed
 - create `.venv`
 - install Python dependencies
 - start the PostgreSQL Docker service
@@ -118,17 +141,17 @@ If you want to run the app without a local Python setup, use the Docker bootstra
 
 That path will:
 
-- copy `.env.example` to `.env` if needed
+- copy `.env.local.example` to `.env` if needed
 - build the app image
-- start PostgreSQL, the Django web container, and Nginx
+- start PostgreSQL and the Django web container
 - wait for the app health endpoint
 - seed the richer demo dataset inside the web container
 
 Docker pilot URLs:
 
-- App root: `http://127.0.0.1/`
-- Login: `http://127.0.0.1/accounts/login/`
-- Health: `http://127.0.0.1/healthz/`
+- App root: `http://127.0.0.1:8000/`
+- Login: `http://127.0.0.1:8000/accounts/login/`
+- Health: `http://127.0.0.1:8000/healthz/`
 
 After bootstrap, run the pilot verifier before sharing the URL:
 
@@ -148,70 +171,27 @@ docker compose down
 
 ## Repository Layout
 
-- [infra](/home/khido/projects/barbershop/infra): Terraform root module, reusable modules, and environment examples
-- [docs](/home/khido/projects/barbershop/docs): architecture, OIDC setup, runbooks, and deployment checklist
-- [.github/workflows](/home/khido/projects/barbershop/.github/workflows): CI/CD and Terraform workflows
-- [scripts/azure](/home/khido/projects/barbershop/scripts/azure): Azure automation scripts used by workflows and operators
+- [apps](/home/khido/projects/barbershop/apps): Django applications
+- [config](/home/khido/projects/barbershop/config): Django settings and project configuration
+- [docs](/home/khido/projects/barbershop/docs): deployment, architecture, pilot, and runbook docs
+- [.github/workflows](/home/khido/projects/barbershop/.github/workflows): CI workflow definitions
+- [nginx](/home/khido/projects/barbershop/nginx): reviewed Nginx site configuration
+- [ops](/home/khido/projects/barbershop/ops): systemd and logrotate assets
+- [scripts](/home/khido/projects/barbershop/scripts): local, deployment, backup, and diagnostic automation
 
-## Azure Bootstrap Steps
+## Release Workflow
 
-1. Create an Azure Storage Account backend for Terraform state.
-2. Copy `infra/env/dev/backend.hcl.example` and `infra/env/prod/backend.hcl.example` to real backend files or provide equivalent values in CI/CD.
-3. Copy the environment tfvars examples and replace placeholder values.
-4. Run Terraform locally once with a trusted bootstrap identity to create:
-   - runtime managed identity
-   - GitHub OIDC identities
-   - ACR
-   - Key Vault
-   - PostgreSQL
-   - Container Apps environment
-   - web app and migration job
-5. Capture Terraform outputs for:
-   - `github_infra_client_id`
-   - `github_deploy_client_id`
-   - `acr_name`
-   - `acr_login_server`
-   - `resource_group_name`
-   - `container_app_name`
-   - `migration_job_name`
-   - `key_vault_name`
+For a first server deployment, follow [DEPLOYMENT.md](/home/khido/projects/barbershop/DEPLOYMENT.md) end to end.
 
-If this is the first time the environment is being created and no application image exists yet, run the first Terraform apply with `deploy_application_resources=false`, push the first image to ACR, and then re-run Terraform with `deploy_application_resources=true`.
-
-After the first apply, set the placeholder Key Vault secrets for outbound booking confirmations if you want automatic customer delivery:
-
-- `telegram_bot_token`
-- `whatsapp_access_token`
-
-Also set `whatsapp_phone_number_id` in the environment tfvars or GitHub environment variables if WhatsApp delivery should be enabled.
-
-## GitHub Setup Steps
-
-1. Create GitHub environments `dev` and `prod`.
-2. Configure environment variables described in [docs/github-oidc-setup.md](/home/khido/projects/barbershop/docs/github-oidc-setup.md).
-3. Add environment approvals for `prod`.
-4. Run `Terraform Apply` for `dev` once the environment variables are in place.
-5. Use `Deploy Dev` to ship the first real application image.
-
-## Terraform Commands
+For normal production updates on the VPS:
 
 ```bash
-terraform -chdir=infra fmt -recursive
-terraform -chdir=infra init -backend-config=env/dev/backend.hcl
-terraform -chdir=infra plan -var-file=env/dev/terraform.tfvars
-terraform -chdir=infra apply -var-file=env/dev/terraform.tfvars
+cd /opt/smartbarber/app
+./deploy.sh --git-pull
+./scripts/healthcheck.sh full
 ```
 
-See [infra/README.md](/home/khido/projects/barbershop/infra/README.md) for the full environment flow.
-
-## Deployment Workflows
-
-- `CI`: lint, tests, and container build validation
-- `Terraform Plan`: review environment-specific infrastructure changes
-- `Terraform Apply`: provision or update Azure infrastructure
-- `Build And Push`: manual image build/push to ACR
-- `Deploy Dev`: build, push, run migration job, update the web app, and verify `/healthz/`
-- `Deploy Prod`: manual production release using the same sequence with GitHub environment protection
+The deployment script validates the environment, optionally creates a pre-deploy backup, builds the web image, starts PostgreSQL, runs `check --deploy`, runs migrations, collects static files, starts the web container, verifies health, and records the release marker.
 
 ## Local Verification Commands
 
@@ -245,60 +225,42 @@ Optional write-mode smoke test:
 SMOKE_WRITE_TESTS=true APP_BASE_URL=http://127.0.0.1:8000 ./scripts/run-browser-smoke.sh
 ```
 
-If you use the Docker-only pilot path, point the smoke test at Nginx instead:
-
-```bash
-APP_BASE_URL=http://127.0.0.1 ./scripts/run-browser-smoke.sh
-```
-
 ## Runtime Configuration
 
-The Azure deployment expects the following categories of configuration:
+Production defaults live in [`.env.example`](/home/khido/projects/barbershop/.env.example). Local development defaults live in [`.env.local.example`](/home/khido/projects/barbershop/.env.local.example).
 
-- non-secret runtime settings passed directly to Container Apps:
-  - `DJANGO_SETTINGS_MODULE`
-  - `DJANGO_ALLOWED_HOSTS`
-  - `DJANGO_CSRF_TRUSTED_ORIGINS`
-  - `POSTGRES_HOST`
-  - `POSTGRES_DB`
-  - `POSTGRES_USER`
-  - `POSTGRES_SSLMODE=require`
-  - session/security settings
-- secrets resolved from Key Vault at runtime through the container app managed identity:
-  - `DJANGO_SECRET_KEY`
-  - `POSTGRES_PASSWORD`
+Production configuration is loaded from an external env file, typically `/opt/smartbarber/env/.env`, and includes:
 
-The local development file remains [`.env.example`](/home/khido/projects/barbershop/.env.example).
+- Django runtime settings such as `DJANGO_SETTINGS_MODULE`, `DJANGO_ALLOWED_HOSTS`, and `DJANGO_CSRF_TRUSTED_ORIGINS`
+- PostgreSQL connection settings such as `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_HOST`
+- deployment controls such as `BACKUP_BEFORE_DEPLOY`, `BACKUP_RETENTION_DAYS`, and `RUN_DIAGNOSTICS_ON_FAILURE`
+- notification credentials such as `WHATSAPP_ACCESS_TOKEN` and `TELEGRAM_BOT_TOKEN`
 
 ## Migration and Static Files Strategy
 
-- Static files are collected by the container entrypoint on startup.
 - Migrations are not run on normal web container startup.
-- A dedicated Azure Container Apps Job runs `python manage.py migrate --noinput` before the web app image is updated.
-- If the migration job fails, the deployment workflow stops before the web revision is updated.
+- Production deployments run migrations explicitly from `scripts/deploy.sh` before the web container is restarted.
+- Production deployments run `collectstatic` explicitly from `scripts/deploy.sh`.
+- If the migration step fails, the deploy script exits nonzero before the web service is updated.
 
 ## Rollback Notes
 
-- If a deployment fails before the web app update, rerun the migration job only after fixing the issue.
-- If the web app update fails after migrations succeeded, redeploy the previous known-good image tag.
-- If a migration is backward-incompatible, application rollback may require a database restore rather than an image rollback alone.
-- Preserve previous image tags in ACR for rollback.
+- Use [rollback.sh](/home/khido/projects/barbershop/rollback.sh) to return to the previous successful release marker or a specific git ref.
+- If a release fails after a backward-incompatible migration, a database restore may be required in addition to a code rollback.
+- Keep recent backup sets and test restores regularly.
 
 ## Troubleshooting
 
-- Migration failures: review Container Apps Job execution logs in Azure and the GitHub Actions logs.
-- Container app health failures: query `/healthz/` and inspect Container Apps revision logs in Log Analytics.
-- OIDC login failures: verify federated credential subject and GitHub environment names match exactly.
-- Secret resolution failures: confirm Key Vault secret names, secret versions, and runtime identity role assignments.
-- PostgreSQL connectivity failures: confirm the Flexible Server firewall posture and SSL mode.
-- Browser smoke failures: confirm the app is running, demo credentials exist, and `python -m playwright install chromium` has been executed in the active environment.
+- App health failures: run `./scripts/healthcheck.sh full` and inspect `docker compose logs --tail=200 web db`
+- Deploy failures: rerun with diagnostics enabled and inspect `./scripts/diagnostics.sh --tail 150`
+- Nginx problems: run `sudo nginx -t` and inspect `/opt/smartbarber/logs/nginx/*.log`
+- Backup and restore issues: use [OPERATIONS.md](/home/khido/projects/barbershop/OPERATIONS.md) and [HARDENING.md](/home/khido/projects/barbershop/HARDENING.md)
 
 ## Additional Documentation
 
-- [infra/README.md](/home/khido/projects/barbershop/infra/README.md)
 - [docs/architecture.md](/home/khido/projects/barbershop/docs/architecture.md)
-- [docs/operations-runbook.md](/home/khido/projects/barbershop/docs/operations-runbook.md)
-- [docs/github-oidc-setup.md](/home/khido/projects/barbershop/docs/github-oidc-setup.md)
 - [docs/deployment-checklist.md](/home/khido/projects/barbershop/docs/deployment-checklist.md)
+- [docs/domain-dns-setup.md](/home/khido/projects/barbershop/docs/domain-dns-setup.md)
+- [docs/operations-runbook.md](/home/khido/projects/barbershop/docs/operations-runbook.md)
 - [docs/barber-pilot-test-plan.md](/home/khido/projects/barbershop/docs/barber-pilot-test-plan.md)
 - [SECURITY.md](/home/khido/projects/barbershop/SECURITY.md)

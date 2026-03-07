@@ -26,7 +26,9 @@ class SaleForm(forms.ModelForm):
         shop = self.initial.get("shop") or getattr(self.instance, "shop", None) or active_shop
         if shop_id:
             shop = self.fields["shop"].queryset.filter(pk=shop_id).first() or shop
-        self.fields["barber"].queryset = Barber.objects.filter(shop=shop, is_active=True) if shop else Barber.objects.none()
+        self.fields["barber"].queryset = (
+            Barber.objects.filter(shop=shop, is_active=True) if shop else Barber.objects.none()
+        )
         if user and user.role != Roles.PLATFORM_ADMIN and active_shop:
             self.fields["shop"].initial = active_shop
             self.fields["shop"].widget = forms.HiddenInput()
@@ -42,7 +44,9 @@ class SaleItemForm(forms.ModelForm):
 
     def __init__(self, *args, shop=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["product"].queryset = Product.objects.filter(shop=shop, is_active=True) if shop else Product.objects.none()
+        self.fields["product"].queryset = (
+            Product.objects.filter(shop=shop, is_active=True) if shop else Product.objects.none()
+        )
         self.fields["unit_price_snapshot"].widget.attrs["step"] = "0.01"
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
@@ -69,7 +73,11 @@ class BaseSaleItemFormSet(BaseInlineFormSet):
         self.shop = shop
         super().__init__(*args, **kwargs)
         for form in self.forms:
-            form.fields["product"].queryset = Product.objects.filter(shop=shop, is_active=True) if shop else Product.objects.none()
+            form.fields["product"].queryset = (
+                Product.objects.filter(shop=shop, is_active=True)
+                if shop
+                else Product.objects.none()
+            )
 
     def clean(self):
         super().clean()

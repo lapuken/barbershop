@@ -15,7 +15,9 @@ class ShopViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.role == Roles.PLATFORM_ADMIN:
             return Shop.objects.all()
-        return Shop.objects.filter(user_accesses__user=user, user_accesses__is_active=True).distinct()
+        return Shop.objects.filter(
+            user_accesses__user=user, user_accesses__is_active=True
+        ).distinct()
 
     def create(self, request, *args, **kwargs):
         if request.user.role != Roles.PLATFORM_ADMIN:

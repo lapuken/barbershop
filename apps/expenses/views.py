@@ -42,7 +42,9 @@ class ExpenseCreateView(RoleRequiredMixin, ActiveShopRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class ExpenseUpdateView(RoleRequiredMixin, ShopScopedQuerysetMixin, ActiveShopRequiredMixin, UpdateView):
+class ExpenseUpdateView(
+    RoleRequiredMixin, ShopScopedQuerysetMixin, ActiveShopRequiredMixin, UpdateView
+):
     allowed_roles = Roles.SALES_ENTRY
     model = Expense
     form_class = ExpenseForm

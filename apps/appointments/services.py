@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, time as dt_time, timedelta
+from datetime import datetime, timedelta
+from datetime import time as dt_time
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from django.db.models import Count

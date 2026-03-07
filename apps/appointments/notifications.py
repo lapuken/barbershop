@@ -48,7 +48,9 @@ def _post_json(url: str, payload: dict, headers: dict | None = None) -> dict:
         method="POST",
     )
     try:
-        with urlopen(request, timeout=settings.APPOINTMENT_NOTIFICATION_TIMEOUT_SECONDS) as response:
+        with urlopen(
+            request, timeout=settings.APPOINTMENT_NOTIFICATION_TIMEOUT_SECONDS
+        ) as response:
             body = response.read().decode("utf-8")
             return json.loads(body) if body else {}
     except HTTPError as exc:
@@ -273,9 +275,11 @@ def send_booking_confirmation(appointment: Appointment, *, request=None) -> Noti
         appointment=appointment,
         status=AppointmentNotification.Status.SKIPPED,
         event_type=AppointmentNotification.EventType.BOOKING_CONFIRMED,
-        channel=customer.preferred_confirmation_channel
-        if customer.preferred_confirmation_channel != Customer.ConfirmationChannel.AUTO
-        else "",
+        channel=(
+            customer.preferred_confirmation_channel
+            if customer.preferred_confirmation_channel != Customer.ConfirmationChannel.AUTO
+            else ""
+        ),
         error_message=reason,
     )
     return NotificationResult(

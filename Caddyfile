@@ -1,0 +1,26 @@
+{
+	email {$ACME_EMAIL:admin@machinjiri.net}
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+{$APP_DOMAIN:app.machinjiri.net}, localhost, 127.0.0.1 {
+	encode zstd gzip
+
+	@static path /static/*
+	handle @static {
+		root * /srv/staticfiles
+		file_server
+	}
+
+	@media path /media/*
+	handle @media {
+		root * /srv/media
+		file_server
+	}
+
+	reverse_proxy web:8000 {
+		header_up X-Real-IP {remote_host}
+	}
+}

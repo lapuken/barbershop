@@ -179,8 +179,18 @@ class BaseAppTestCase(TestCase):
             ],
         }
 
-    def appointment_payload(self, *, customer=None, barber=None, scheduled_start=None, duration_minutes=45, status="confirmed"):
-        start = scheduled_start or (timezone.now() + timedelta(hours=2)).replace(second=0, microsecond=0)
+    def appointment_payload(
+        self,
+        *,
+        customer=None,
+        barber=None,
+        scheduled_start=None,
+        duration_minutes=45,
+        status="confirmed",
+    ):
+        start = scheduled_start or (timezone.now() + timedelta(hours=2)).replace(
+            second=0, microsecond=0
+        )
         return {
             "shop": self.shop1.id,
             "customer": (customer or self.customer).id,
@@ -196,6 +206,20 @@ class BaseAppTestCase(TestCase):
 
 
 class AuthAndAuthorizationTests(BaseAppTestCase):
+    def test_unauthenticated_appointments_redirect_to_login(self):
+        response = self.web_client.get(reverse("appointments:list"))
+        self.assertEqual(response.status_code, 302)
+        self.assertIn(reverse("accounts:login"), response.url)
+
+    def test_create_superuser_defaults_to_platform_admin_role(self):
+        User = get_user_model()
+        admin = User.objects.create_superuser(
+            username="bootstrapadmin",
+            email="bootstrapadmin@example.com",
+            password="StrongPass12345!",
+        )
+        self.assertEqual(admin.role, Roles.PLATFORM_ADMIN)
+
     def test_valid_login(self):
         response = self.web_client.post(
             reverse("accounts:login"),
@@ -282,7 +306,9 @@ class BarberTests(BaseAppTestCase):
 
     def test_inactive_barber_cannot_receive_sale(self):
         self.login_api(self.manager)
-        response = self.api_client.post("/api/sales/", self.sale_payload(barber=self.inactive_barber), format="json")
+        response = self.api_client.post(
+            "/api/sales/", self.sale_payload(barber=self.inactive_barber), format="json"
+        )
         self.assertEqual(response.status_code, 400)
 
 
@@ -324,7 +350,9 @@ class ProductTests(BaseAppTestCase):
 
     def test_inactive_product_cannot_be_sold(self):
         self.login_api(self.manager)
-        response = self.api_client.post("/api/sales/", self.sale_payload(product=self.inactive_product), format="json")
+        response = self.api_client.post(
+            "/api/sales/", self.sale_payload(product=self.inactive_product), format="json"
+        )
         self.assertEqual(response.status_code, 400)
 
 
@@ -413,7 +441,9 @@ class CustomerAndAppointmentTests(BaseAppTestCase):
 
     def test_create_appointment_succeeds(self):
         self.login_api(self.manager)
-        response = self.api_client.post("/api/appointments/", self.appointment_payload(), format="json")
+        response = self.api_client.post(
+            "/api/appointments/", self.appointment_payload(), format="json"
+        )
         self.assertEqual(response.status_code, 201)
         appointment = Appointment.objects.get(pk=response.data["id"])
         self.assertEqual(appointment.status, Appointment.Status.CONFIRMED)
@@ -427,7 +457,9 @@ class CustomerAndAppointmentTests(BaseAppTestCase):
     def test_confirmed_appointment_sends_whatsapp_confirmation(self, post_json):
         post_json.return_value = {"messages": [{"id": "wamid.123"}]}
         self.login_api(self.manager)
-        response = self.api_client.post("/api/appointments/", self.appointment_payload(), format="json")
+        response = self.api_client.post(
+            "/api/appointments/", self.appointment_payload(), format="json"
+        )
         self.assertEqual(response.status_code, 201)
         notification = AppointmentNotification.objects.get(appointment_id=response.data["id"])
         self.assertEqual(notification.status, AppointmentNotification.Status.SENT)
@@ -494,7 +526,9 @@ class CustomerAndAppointmentTests(BaseAppTestCase):
                 "email": "walkin@example.com",
                 "barber": self.barber.id,
                 "service_name": "Shape Up",
-                "scheduled_start": (timezone.now() + timedelta(days=1)).replace(second=0, microsecond=0).isoformat(),
+                "scheduled_start": (timezone.now() + timedelta(days=1))
+                .replace(second=0, microsecond=0)
+                .isoformat(),
                 "duration_minutes": 30,
                 "notes": "Prefers morning",
             },
@@ -518,9 +552,9 @@ class CustomerAndAppointmentTests(BaseAppTestCase):
                 "preferred_confirmation_channel": Customer.ConfirmationChannel.TELEGRAM,
                 "barber": self.barber.id,
                 "service_name": "Shape Up",
-                "scheduled_start": (
-                    timezone.now() + timedelta(days=2)
-                ).replace(second=0, microsecond=0).isoformat(),
+                "scheduled_start": (timezone.now() + timedelta(days=2))
+                .replace(second=0, microsecond=0)
+                .isoformat(),
                 "duration_minutes": 30,
                 "notes": "Telegram only",
             },
@@ -657,7 +691,11 @@ class AuditTests(BaseAppTestCase):
         product.name = "Wax Plus"
         product.save()
         product.soft_delete(user=self.manager)
-        events = list(AuditLog.objects.filter(entity_type="Product", entity_id=str(product.id)).values_list("event_type", flat=True))
+        events = list(
+            AuditLog.objects.filter(entity_type="Product", entity_id=str(product.id)).values_list(
+                "event_type", flat=True
+            )
+        )
         self.assertIn("create", events)
         self.assertIn("update", events)
         self.assertIn("delete", events)

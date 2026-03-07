@@ -196,7 +196,10 @@ class AppointmentUpdateView(
         previous_status = self.object.status
         form.instance.updated_by = self.request.user
         response = super().form_valid(form)
-        if previous_status != Appointment.Status.CONFIRMED and self.object.status == Appointment.Status.CONFIRMED:
+        if (
+            previous_status != Appointment.Status.CONFIRMED
+            and self.object.status == Appointment.Status.CONFIRMED
+        ):
             result = send_booking_confirmation(self.object, request=self.request)
             if result.sent:
                 messages.success(
@@ -259,9 +262,7 @@ class PublicBookingView(FormView):
             phone=form.cleaned_data.get("phone", ""),
             email=form.cleaned_data.get("email", ""),
             telegram_chat_id=form.cleaned_data.get("telegram_chat_id", ""),
-            preferred_confirmation_channel=form.cleaned_data.get(
-                "preferred_confirmation_channel"
-            ),
+            preferred_confirmation_channel=form.cleaned_data.get("preferred_confirmation_channel"),
             barber=form.cleaned_data.get("barber"),
             service_name=form.cleaned_data["service_name"],
             scheduled_start=form.cleaned_data["scheduled_start"],

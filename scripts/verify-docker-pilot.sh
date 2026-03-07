@@ -20,15 +20,19 @@ compose_cmd() {
 }
 
 COMPOSE="$(compose_cmd)"
+export ENV_FILE_PATH="${ENV_FILE_PATH:-.env}"
+export APP_UID="${APP_UID:-$(id -u)}"
+export APP_GID="${APP_GID:-$(id -g)}"
+export APP_PORT="${APP_PORT:-8000}"
 
 echo "Checking service status..."
 ${COMPOSE} ps
 
 echo
 echo "Checking application endpoints..."
-curl --fail --silent --show-error http://127.0.0.1/healthz/
+curl --fail --silent --show-error "http://127.0.0.1:${APP_PORT}/healthz/"
 echo
-curl --fail --silent --show-error --location http://127.0.0.1/accounts/login/ >/dev/null
+curl --fail --silent --show-error --location "http://127.0.0.1:${APP_PORT}/accounts/login/" >/dev/null
 echo "Login page OK"
 
 echo
@@ -40,7 +44,7 @@ cat <<EOF
 Pilot verification complete.
 
 Tester URLs:
-  App root: http://127.0.0.1/
-  Login:    http://127.0.0.1/accounts/login/
-  Health:   http://127.0.0.1/healthz/
+  App root: http://127.0.0.1:${APP_PORT}/
+  Login:    http://127.0.0.1:${APP_PORT}/accounts/login/
+  Health:   http://127.0.0.1:${APP_PORT}/healthz/
 EOF

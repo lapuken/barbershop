@@ -17,7 +17,9 @@ class AppLoginView(LoginView):
     redirect_authenticated_user = True
 
     def form_valid(self, form):
-        user, error = authenticate_and_login(self.request, form.cleaned_data["username"], form.cleaned_data["password"])
+        user, error = authenticate_and_login(
+            self.request, form.cleaned_data["username"], form.cleaned_data["password"]
+        )
         if error:
             form.add_error(None, error)
             return self.form_invalid(form)

@@ -94,7 +94,10 @@ class AppointmentSerializer(serializers.ModelSerializer):
         instance.updated_by = user
         instance.full_clean()
         instance.save()
-        if previous_status != Appointment.Status.CONFIRMED and instance.status == Appointment.Status.CONFIRMED:
+        if (
+            previous_status != Appointment.Status.CONFIRMED
+            and instance.status == Appointment.Status.CONFIRMED
+        ):
             send_booking_confirmation(instance, request=self.context.get("request"))
         return instance
 
@@ -140,9 +143,8 @@ class PublicBookingSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 {"phone": ["A phone number is required for WhatsApp confirmations."]}
             )
-        if (
-            preferred_channel == Customer.ConfirmationChannel.TELEGRAM
-            and not attrs.get("telegram_chat_id")
+        if preferred_channel == Customer.ConfirmationChannel.TELEGRAM and not attrs.get(
+            "telegram_chat_id"
         ):
             raise serializers.ValidationError(
                 {"telegram_chat_id": ["A Telegram chat ID is required for Telegram confirmations."]}

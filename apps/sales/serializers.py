@@ -11,14 +11,22 @@ class SaleItemSerializer(serializers.ModelSerializer):
         item_type = attrs.get("item_type")
         if item_type == SaleItem.PRODUCT:
             if not product:
-                raise serializers.ValidationError({"product": "Product is required for product sale items."})
+                raise serializers.ValidationError(
+                    {"product": "Product is required for product sale items."}
+                )
             if not product.is_active or product.deleted_at is not None:
-                raise serializers.ValidationError({"product": "Inactive product cannot be used in new sales."})
+                raise serializers.ValidationError(
+                    {"product": "Inactive product cannot be used in new sales."}
+                )
         if item_type == SaleItem.SERVICE:
             if not attrs.get("item_name_snapshot"):
-                raise serializers.ValidationError({"item_name_snapshot": "Service name is required."})
+                raise serializers.ValidationError(
+                    {"item_name_snapshot": "Service name is required."}
+                )
             if attrs.get("unit_price_snapshot") is None:
-                raise serializers.ValidationError({"unit_price_snapshot": "Unit price is required."})
+                raise serializers.ValidationError(
+                    {"unit_price_snapshot": "Unit price is required."}
+                )
         return attrs
 
     class Meta:
@@ -60,16 +68,30 @@ class SaleSerializer(serializers.ModelSerializer):
             "deleted_at",
             "items",
         ]
-        read_only_fields = ["total_amount", "commission_amount", "created_by", "updated_by", "created_at", "updated_at", "deleted_at"]
+        read_only_fields = [
+            "total_amount",
+            "commission_amount",
+            "created_by",
+            "updated_by",
+            "created_at",
+            "updated_at",
+            "deleted_at",
+        ]
 
     def validate(self, attrs):
         shop = attrs.get("shop", getattr(self.instance, "shop", None))
         barber = attrs.get("barber", getattr(self.instance, "barber", None))
         sale_date = attrs.get("sale_date", getattr(self.instance, "sale_date", None))
-        existing = duplicate_sale_for(shop, barber, sale_date, exclude_sale_id=getattr(self.instance, "pk", None))
+        existing = duplicate_sale_for(
+            shop, barber, sale_date, exclude_sale_id=getattr(self.instance, "pk", None)
+        )
         if existing:
-            raise serializers.ValidationError({"non_field_errors": ["Daily sale already exists for this barber and shop/date."]})
-        candidate = self.instance or Sale(created_by=self.context["request"].user, updated_by=self.context["request"].user)
+            raise serializers.ValidationError(
+                {"non_field_errors": ["Daily sale already exists for this barber and shop/date."]}
+            )
+        candidate = self.instance or Sale(
+            created_by=self.context["request"].user, updated_by=self.context["request"].user
+        )
         for attr, value in attrs.items():
             if attr == "items":
                 continue

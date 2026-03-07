@@ -1,0 +1,10 @@
+[Unit]
+Description=Run Smart Barber Shops weekly Docker cleanup
+
+[Timer]
+OnCalendar=Sun *-*-* 03:45:00
+Persistent=true
+Unit=smartbarber-prune.service
+
+[Install]
+WantedBy=timers.target

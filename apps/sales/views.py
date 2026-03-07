@@ -37,14 +37,24 @@ class BaseSaleEditView(RoleRequiredMixin, ActiveShopRequiredMixin, View):
     def get_sale(self):
         if self.object is not None:
             return self.object
-        return Sale(created_by=self.request.user, updated_by=self.request.user, shop=self.request.active_shop)
+        return Sale(
+            created_by=self.request.user,
+            updated_by=self.request.user,
+            shop=self.request.active_shop,
+        )
 
     def get_form(self, data=None):
         sale = self.get_sale()
         initial = {}
         if sale.shop_id:
             initial["shop"] = sale.shop
-        form = SaleForm(data=data, instance=sale, initial=initial, user=self.request.user, active_shop=self.request.active_shop)
+        form = SaleForm(
+            data=data,
+            instance=sale,
+            initial=initial,
+            user=self.request.user,
+            active_shop=self.request.active_shop,
+        )
         return form
 
     def get_formset(self, data=None):
@@ -53,7 +63,11 @@ class BaseSaleEditView(RoleRequiredMixin, ActiveShopRequiredMixin, View):
         return SaleItemFormSet(data=data, instance=sale, prefix="items", shop=shop)
 
     def render_form(self, form, formset):
-        return render(self.request, self.template_name, {"form": form, "formset": formset, "sale": self.get_object()})
+        return render(
+            self.request,
+            self.template_name,
+            {"form": form, "formset": formset, "sale": self.get_object()},
+        )
 
     def get(self, request, *args, **kwargs):
         return self.render_form(self.get_form(), self.get_formset())
@@ -63,9 +77,14 @@ class BaseSaleEditView(RoleRequiredMixin, ActiveShopRequiredMixin, View):
         formset = self.get_formset(data=request.POST)
         if form.is_valid() and formset.is_valid():
             sale = form.save(commit=False)
-            duplicate = duplicate_sale_for(sale.shop, sale.barber, sale.sale_date, exclude_sale_id=sale.pk)
+            duplicate = duplicate_sale_for(
+                sale.shop, sale.barber, sale.sale_date, exclude_sale_id=sale.pk
+            )
             if duplicate:
-                messages.info(request, "A sale already exists for that barber and date. Redirected to edit mode.")
+                messages.info(
+                    request,
+                    "A sale already exists for that barber and date. Redirected to edit mode.",
+                )
                 return redirect("sales:edit", pk=duplicate.pk)
             save_sale_with_items(sale=sale, items_data=formset.cleaned_data, user=request.user)
             messages.success(request, "Sale saved.")

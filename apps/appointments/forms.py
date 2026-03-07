@@ -150,17 +150,15 @@ class PublicBookingForm(forms.Form):
                 )
             )
         preferred_channel = cleaned_data.get("preferred_confirmation_channel")
-        if (
-            preferred_channel == Customer.ConfirmationChannel.WHATSAPP
-            and not cleaned_data.get("phone")
+        if preferred_channel == Customer.ConfirmationChannel.WHATSAPP and not cleaned_data.get(
+            "phone"
         ):
             self.add_error(
                 "phone",
                 "A phone number is required for WhatsApp confirmations.",
             )
-        if (
-            preferred_channel == Customer.ConfirmationChannel.TELEGRAM
-            and not cleaned_data.get("telegram_chat_id")
+        if preferred_channel == Customer.ConfirmationChannel.TELEGRAM and not cleaned_data.get(
+            "telegram_chat_id"
         ):
             self.add_error(
                 "telegram_chat_id",

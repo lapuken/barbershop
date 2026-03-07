@@ -1,11 +1,18 @@
 [tool.black]
 line-length = 100
 target-version = ["py312"]
+extend-exclude = "/migrations/"
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+extend-exclude = ["**/migrations/*.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "DJ"]
-ignore = ["DJ001"]
+ignore = ["DJ001", "E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"config/settings/dev.py" = ["F403"]
+"config/settings/prod.py" = ["F405"]
+"config/settings/test.py" = ["F403"]

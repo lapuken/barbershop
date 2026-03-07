@@ -20,7 +20,11 @@ compose_cmd() {
 }
 
 if [[ ! -f ".env" ]]; then
-  cp .env.example .env
+  if [[ -f ".env.local.example" ]]; then
+    cp .env.local.example .env
+  else
+    cp .env.example .env
+  fi
 fi
 
 set -a
