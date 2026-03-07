@@ -22,20 +22,20 @@ Optional redirect target:
 
 Key deployment assets:
 
-- [DEPLOYMENT.md](/home/khido/projects/barbershop/DEPLOYMENT.md)
-- [OPERATIONS.md](/home/khido/projects/barbershop/OPERATIONS.md)
-- [HARDENING.md](/home/khido/projects/barbershop/HARDENING.md)
-- [docker-compose.yml](/home/khido/projects/barbershop/docker-compose.yml)
-- [deploy.sh](/home/khido/projects/barbershop/deploy.sh)
-- [backup.sh](/home/khido/projects/barbershop/backup.sh)
-- [rollback.sh](/home/khido/projects/barbershop/rollback.sh)
-- [restore.sh](/home/khido/projects/barbershop/restore.sh)
-- [nginx/app.machinjiri.net.bootstrap.conf](/home/khido/projects/barbershop/nginx/app.machinjiri.net.bootstrap.conf)
-- [nginx/app.machinjiri.net.conf](/home/khido/projects/barbershop/nginx/app.machinjiri.net.conf)
-- [docs/architecture.md](/home/khido/projects/barbershop/docs/architecture.md)
-- [docs/deployment-checklist.md](/home/khido/projects/barbershop/docs/deployment-checklist.md)
-- [docs/operations-runbook.md](/home/khido/projects/barbershop/docs/operations-runbook.md)
-- [docs/security-hardening.md](/home/khido/projects/barbershop/docs/security-hardening.md)
+- [DEPLOYMENT.md](DEPLOYMENT.md)
+- [OPERATIONS.md](OPERATIONS.md)
+- [HARDENING.md](HARDENING.md)
+- [docker-compose.yml](docker-compose.yml)
+- [deploy.sh](deploy.sh)
+- [backup.sh](backup.sh)
+- [rollback.sh](rollback.sh)
+- [restore.sh](restore.sh)
+- [nginx/app.machinjiri.net.bootstrap.conf](nginx/app.machinjiri.net.bootstrap.conf)
+- [nginx/app.machinjiri.net.conf](nginx/app.machinjiri.net.conf)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/deployment-checklist.md](docs/deployment-checklist.md)
+- [docs/operations-runbook.md](docs/operations-runbook.md)
+- [docs/security-hardening.md](docs/security-hardening.md)
 
 System assumptions for the single-VPS path:
 
@@ -58,10 +58,10 @@ System assumptions for the single-VPS path:
 
 Current delivery snapshots:
 
-- [Stakeholder status summary](/home/khido/projects/barbershop/docs/stakeholder-status-summary.md)
-- [Technical status breakdown](/home/khido/projects/barbershop/docs/technical-status-breakdown.md)
-- [Implementation roadmap](/home/khido/projects/barbershop/docs/implementation-roadmap.md)
-- [User roles guide](/home/khido/projects/barbershop/USER_ROLES.md)
+- [Stakeholder status summary](docs/stakeholder-status-summary.md)
+- [Technical status breakdown](docs/technical-status-breakdown.md)
+- [Implementation roadmap](docs/implementation-roadmap.md)
+- [User roles guide](USER_ROLES.md)
 
 ## Prerequisites
 
@@ -171,17 +171,17 @@ docker compose down
 
 ## Repository Layout
 
-- [apps](/home/khido/projects/barbershop/apps): Django applications
-- [config](/home/khido/projects/barbershop/config): Django settings and project configuration
-- [docs](/home/khido/projects/barbershop/docs): deployment, architecture, pilot, and runbook docs
-- [.github/workflows](/home/khido/projects/barbershop/.github/workflows): CI workflow definitions
-- [nginx](/home/khido/projects/barbershop/nginx): reviewed Nginx site configuration
-- [ops](/home/khido/projects/barbershop/ops): systemd and logrotate assets
-- [scripts](/home/khido/projects/barbershop/scripts): local, deployment, backup, and diagnostic automation
+- [apps](apps): Django applications
+- [config](config): Django settings and project configuration
+- [docs](docs): deployment, architecture, pilot, and runbook docs
+- [.github/workflows](.github/workflows): CI workflow definitions
+- [nginx](nginx): reviewed Nginx site configuration
+- [ops](ops): systemd and logrotate assets
+- [scripts](scripts): local, deployment, backup, and diagnostic automation
 
 ## Release Workflow
 
-For a first server deployment, follow [DEPLOYMENT.md](/home/khido/projects/barbershop/DEPLOYMENT.md) end to end.
+For a first server deployment, follow [DEPLOYMENT.md](DEPLOYMENT.md) end to end.
 
 For normal production updates on the VPS:
 
@@ -227,7 +227,7 @@ SMOKE_WRITE_TESTS=true APP_BASE_URL=http://127.0.0.1:8000 ./scripts/run-browser-
 
 ## Runtime Configuration
 
-Production defaults live in [`.env.example`](/home/khido/projects/barbershop/.env.example). Local development defaults live in [`.env.local.example`](/home/khido/projects/barbershop/.env.local.example).
+Production defaults live in [`.env.example`](.env.example). Local development defaults live in [`.env.local.example`](.env.local.example).
 
 Production configuration is loaded from an external env file, typically `/opt/smartbarber/env/.env`, and includes:
 
@@ -245,7 +245,7 @@ Production configuration is loaded from an external env file, typically `/opt/sm
 
 ## Rollback Notes
 
-- Use [rollback.sh](/home/khido/projects/barbershop/rollback.sh) to return to the previous successful release marker or a specific git ref.
+- Use [rollback.sh](rollback.sh) to return to the previous successful release marker or a specific git ref.
 - If a release fails after a backward-incompatible migration, a database restore may be required in addition to a code rollback.
 - Keep recent backup sets and test restores regularly.
 
@@ -254,13 +254,13 @@ Production configuration is loaded from an external env file, typically `/opt/sm
 - App health failures: run `./scripts/healthcheck.sh full` and inspect `docker compose logs --tail=200 web db`
 - Deploy failures: rerun with diagnostics enabled and inspect `./scripts/diagnostics.sh --tail 150`
 - Nginx problems: run `sudo nginx -t` and inspect `/opt/smartbarber/logs/nginx/*.log`
-- Backup and restore issues: use [OPERATIONS.md](/home/khido/projects/barbershop/OPERATIONS.md) and [HARDENING.md](/home/khido/projects/barbershop/HARDENING.md)
+- Backup and restore issues: use [OPERATIONS.md](OPERATIONS.md) and [HARDENING.md](HARDENING.md)
 
 ## Additional Documentation
 
-- [docs/architecture.md](/home/khido/projects/barbershop/docs/architecture.md)
-- [docs/deployment-checklist.md](/home/khido/projects/barbershop/docs/deployment-checklist.md)
-- [docs/domain-dns-setup.md](/home/khido/projects/barbershop/docs/domain-dns-setup.md)
-- [docs/operations-runbook.md](/home/khido/projects/barbershop/docs/operations-runbook.md)
-- [docs/barber-pilot-test-plan.md](/home/khido/projects/barbershop/docs/barber-pilot-test-plan.md)
-- [SECURITY.md](/home/khido/projects/barbershop/SECURITY.md)
+- [docs/architecture.md](docs/architecture.md)
+- [docs/deployment-checklist.md](docs/deployment-checklist.md)
+- [docs/domain-dns-setup.md](docs/domain-dns-setup.md)
+- [docs/operations-runbook.md](docs/operations-runbook.md)
+- [docs/barber-pilot-test-plan.md](docs/barber-pilot-test-plan.md)
+- [SECURITY.md](SECURITY.md)

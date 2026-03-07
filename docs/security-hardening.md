@@ -2,5 +2,5 @@
 
 The VPS hardening guide now lives in the repository root:
 
-- [`HARDENING.md`](/home/khido/projects/barbershop/HARDENING.md)
-- [`DEPLOYMENT.md`](/home/khido/projects/barbershop/DEPLOYMENT.md)
+- [`HARDENING.md`](../HARDENING.md)
+- [`DEPLOYMENT.md`](../DEPLOYMENT.md)

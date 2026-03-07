@@ -246,5 +246,5 @@ docker system df
 
 For the ongoing operator workflow, use:
 
-- [`OPERATIONS.md`](/home/khido/projects/barbershop/OPERATIONS.md)
-- [`HARDENING.md`](/home/khido/projects/barbershop/HARDENING.md)
+- [`OPERATIONS.md`](OPERATIONS.md)
+- [`HARDENING.md`](HARDENING.md)
