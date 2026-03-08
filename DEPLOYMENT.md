@@ -131,6 +131,26 @@ cd /opt/smartbarber/app
 
 If `DJANGO_SUPERUSER_USERNAME`, `DJANGO_SUPERUSER_EMAIL`, and `DJANGO_SUPERUSER_PASSWORD` are set in `/opt/smartbarber/env/.env`, the script runs non-interactively. Otherwise it falls back to interactive `createsuperuser`.
 
+## Go-Live Application Data
+
+For a first production data load, use the reviewed go-live initializer instead of inserting rows by hand. The initializer creates or updates the platform admin, shops, shop users, shop access assignments, barbers, and optional products from a JSON file.
+
+Reference files:
+
+- [`docs/golive-initialization.md`](docs/golive-initialization.md)
+- [`ops/golive-init.example.json`](ops/golive-init.example.json)
+
+Typical workflow:
+
+```bash
+cp /opt/smartbarber/app/ops/golive-init.example.json /opt/smartbarber/env/golive-init.json
+nano /opt/smartbarber/env/golive-init.json
+cd /opt/smartbarber/app
+./scripts/initialize-golive.sh /opt/smartbarber/env/golive-init.json
+```
+
+If you use the go-live initializer with a `platform_admin` section, it can replace the separate `./scripts/create-initial-admin.sh` step.
+
 ## Validation
 
 ```bash

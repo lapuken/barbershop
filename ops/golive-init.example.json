@@ -1,0 +1,56 @@
+{
+  "platform_admin": {
+    "username": "platformadmin",
+    "email": "admin@example.com",
+    "password": "ChangeMe12345!",
+    "phone": "+265-999-000-001",
+    "must_change_password": true
+  },
+  "shops": [
+    {
+      "branch_code": "BLZ-001",
+      "name": "Machinjiri Barber Lounge",
+      "address": "101 Example Road, Blantyre",
+      "phone": "+265-999-000-010",
+      "whatsapp_number": "265999000010",
+      "telegram_handle": "machinjiri_barber_lounge",
+      "currency": "MWK",
+      "timezone": "Africa/Blantyre",
+      "users": [
+        {
+          "username": "owner-machinjiri",
+          "email": "owner@example.com",
+          "password": "ChangeMe12345!",
+          "role": "shop_owner",
+          "phone": "+265-999-000-011",
+          "must_change_password": true
+        },
+        {
+          "username": "cashier-machinjiri",
+          "email": "cashier@example.com",
+          "password": "ChangeMe12345!",
+          "role": "cashier",
+          "phone": "+265-999-000-012",
+          "must_change_password": true
+        }
+      ],
+      "barbers": [
+        {
+          "full_name": "Alex Banda",
+          "employee_code": "BR-001",
+          "phone": "+265-999-000-021",
+          "commission_rate": "45.00"
+        }
+      ],
+      "products": [
+        {
+          "sku": "POM-001",
+          "name": "Signature Pomade",
+          "category": "Styling",
+          "cost_price": "5000.00",
+          "sale_price": "12000.00"
+        }
+      ]
+    }
+  ]
+}

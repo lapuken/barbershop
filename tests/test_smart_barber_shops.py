@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import json
+import os
+import tempfile
 from datetime import datetime, timedelta
 from decimal import Decimal
 from unittest.mock import patch
 from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
+from django.core.management import CommandError, call_command
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -699,3 +703,152 @@ class AuditTests(BaseAppTestCase):
         self.assertIn("create", events)
         self.assertIn("update", events)
         self.assertIn("delete", events)
+
+
+class GoLiveInitializationCommandTests(TestCase):
+    def write_config(self, payload):
+        handle = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        self.addCleanup(lambda: os.path.exists(handle.name) and os.unlink(handle.name))
+        with handle:
+            json.dump(payload, handle)
+        return handle.name
+
+    def test_initialize_golive_creates_required_records(self):
+        payload = {
+            "platform_admin": {
+                "username": "platformadmin",
+                "email": "admin@example.com",
+                "password": "StrongPass12345!",
+                "must_change_password": True,
+            },
+            "shops": [
+                {
+                    "branch_code": "BLZ-001",
+                    "name": "Machinjiri Barber Lounge",
+                    "address": "101 Example Road",
+                    "phone": "+265-999-000-010",
+                    "currency": "MWK",
+                    "timezone": "Africa/Blantyre",
+                    "users": [
+                        {
+                            "username": "owner-machinjiri",
+                            "email": "owner@example.com",
+                            "password": "StrongPass12345!",
+                            "role": Roles.SHOP_OWNER,
+                            "must_change_password": True,
+                        }
+                    ],
+                    "barbers": [
+                        {
+                            "full_name": "Alex Banda",
+                            "employee_code": "BR-001",
+                            "commission_rate": "45.00",
+                        }
+                    ],
+                    "products": [
+                        {
+                            "sku": "POM-001",
+                            "name": "Signature Pomade",
+                            "category": "Styling",
+                            "sale_price": "12000.00",
+                        }
+                    ],
+                }
+            ],
+        }
+
+        call_command("initialize_golive", config=self.write_config(payload))
+
+        User = get_user_model()
+        admin = User.objects.get(username="platformadmin")
+        owner = User.objects.get(username="owner-machinjiri")
+        shop = Shop.objects.get(branch_code="BLZ-001")
+
+        self.assertEqual(admin.role, Roles.PLATFORM_ADMIN)
+        self.assertTrue(admin.is_superuser)
+        self.assertTrue(admin.check_password("StrongPass12345!"))
+        self.assertEqual(owner.role, Roles.SHOP_OWNER)
+        self.assertTrue(UserShopAccess.objects.filter(user=owner, shop=shop, is_active=True).exists())
+        self.assertTrue(
+            Barber.objects.filter(shop=shop, employee_code="BR-001", is_active=True).exists()
+        )
+        self.assertTrue(Product.objects.filter(shop=shop, sku="POM-001", is_active=True).exists())
+
+    def test_initialize_golive_does_not_reset_existing_passwords_without_flag(self):
+        User = get_user_model()
+        existing_admin = User.objects.create_user(
+            username="platformadmin",
+            email="admin@example.com",
+            password="OldPass12345!",
+            role=Roles.PLATFORM_ADMIN,
+            is_staff=True,
+            is_superuser=True,
+        )
+
+        payload = {
+            "platform_admin": {
+                "username": "platformadmin",
+                "email": "admin@example.com",
+                "password": "NewPass12345!",
+            },
+            "shops": [
+                {
+                    "branch_code": "BLZ-001",
+                    "name": "Machinjiri Barber Lounge",
+                    "address": "101 Example Road",
+                    "phone": "+265-999-000-010",
+                    "users": [
+                        {
+                            "username": "cashier-machinjiri",
+                            "email": "cashier@example.com",
+                            "password": "CashierPass12345!",
+                            "role": Roles.CASHIER,
+                        }
+                    ],
+                    "barbers": [{"full_name": "Alex Banda"}],
+                }
+            ],
+        }
+
+        call_command("initialize_golive", config=self.write_config(payload))
+
+        existing_admin.refresh_from_db()
+        self.assertTrue(existing_admin.check_password("OldPass12345!"))
+        self.assertFalse(existing_admin.check_password("NewPass12345!"))
+
+    def test_initialize_golive_requires_operator_and_barber_for_active_shop(self):
+        User = get_user_model()
+        User.objects.create_user(
+            username="platformadmin",
+            email="admin@example.com",
+            password="StrongPass12345!",
+            role=Roles.PLATFORM_ADMIN,
+            is_staff=True,
+            is_superuser=True,
+        )
+
+        payload = {
+            "shops": [
+                {
+                    "branch_code": "BLZ-001",
+                    "name": "Machinjiri Barber Lounge",
+                    "address": "101 Example Road",
+                    "phone": "+265-999-000-010",
+                    "users": [
+                        {
+                            "username": "barber-login",
+                            "email": "barber@example.com",
+                            "password": "StrongPass12345!",
+                            "role": Roles.BARBER,
+                        }
+                    ],
+                    "barbers": [],
+                }
+            ]
+        }
+
+        with self.assertRaisesMessage(
+            CommandError,
+            "must have at least one active shop_owner, shop_manager, or cashier user.",
+        ):
+            call_command("initialize_golive", config=self.write_config(payload))

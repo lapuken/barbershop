@@ -45,6 +45,15 @@ cd /opt/smartbarber/app
 ./scripts/diagnostics.sh --tail 150
 ```
 
+Initialize or update go-live baseline data:
+
+```bash
+cd /opt/smartbarber/app
+./scripts/initialize-golive.sh /opt/smartbarber/env/golive-init.json
+```
+
+For the required JSON fields and table mapping, use [`docs/golive-initialization.md`](docs/golive-initialization.md).
+
 ## Restart and Recovery
 
 Restart application services:

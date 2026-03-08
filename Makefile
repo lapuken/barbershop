@@ -4,7 +4,7 @@ else
 ENV_FILE ?= .env
 endif
 
-.PHONY: deploy update logs ps restart down backup restore restore-set rollback admin migrate collectstatic shell healthcheck diagnostics cleanup-backups prune-images
+.PHONY: deploy update logs ps restart down backup restore restore-set rollback admin golive-init migrate collectstatic shell healthcheck diagnostics cleanup-backups prune-images
 
 deploy:
 	./deploy.sh
@@ -40,6 +40,10 @@ rollback:
 
 admin:
 	./scripts/create-initial-admin.sh
+
+golive-init:
+	@if [ -z "$(FILE)" ]; then echo "Usage: make golive-init FILE=/opt/smartbarber/env/golive-init.json"; exit 1; fi
+	./scripts/initialize-golive.sh "$(FILE)" $(ARGS)
 
 migrate:
 	docker compose --env-file $(ENV_FILE) run --rm --no-deps -e RUN_COLLECTSTATIC=false web python manage.py migrate --noinput
