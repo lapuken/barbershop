@@ -1,0 +1,103 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+3 0 obj
+<< /Length 4444 >>
+stream
+0.4 w
+BT /F2 16 Tf 1 0 0 1 36.00 576.00 Tm (Smart Barber Shops Role Summary) Tj ET
+BT /F1 9 Tf 1 0 0 1 36.00 558.00 Tm (Generated: 2026-03-09 | Page 1) Tj ET
+BT /F1 9 Tf 1 0 0 1 36.00 544.00 Tm (Capabilities are based on USER_ROLES.md and the enforced role gates in the Django app.) Tj ET
+36.00 500.00 720.00 24.00 re S
+BT /F2 10 Tf 1 0 0 1 40.00 508.00 Tm (Role) Tj ET
+BT /F2 10 Tf 1 0 0 1 170.00 508.00 Tm (Current users with this role) Tj ET
+BT /F2 10 Tf 1 0 0 1 420.00 508.00 Tm (Capabilities) Tj ET
+166.00 524.00 m 166.00 500.00 l S
+416.00 524.00 m 416.00 500.00 l S
+36.00 444.00 720.00 56.00 re S
+166.00 500.00 m 166.00 444.00 l S
+416.00 500.00 m 416.00 444.00 l S
+BT /F2 10 Tf 1 0 0 1 40.00 486.00 Tm (Platform Admin) Tj ET
+BT /F2 10 Tf 1 0 0 1 40.00 474.00 Tm (\(platform_admin\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 486.00 Tm (platformadmin <admin@example.com> \(all) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 474.00 Tm (shops\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 486.00 Tm (All-shop oversight. Can create and edit shops and has) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 474.00 Tm (full create, edit, and archive access for barbers,) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 462.00 Tm (products, customers, appointments, sales, and expenses,) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 450.00 Tm (plus full reports, audit, settings, and API access.) Tj ET
+36.00 376.00 720.00 68.00 re S
+166.00 444.00 m 166.00 376.00 l S
+416.00 444.00 m 416.00 376.00 l S
+BT /F2 10 Tf 1 0 0 1 40.00 430.00 Tm (Shop Owner) Tj ET
+BT /F2 10 Tf 1 0 0 1 40.00 418.00 Tm (\(shop_owner\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 430.00 Tm (owner1 <owner@example.com> \(Downtown) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 418.00 Tm (Barber Lounge\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 406.00 Tm (owner2 <owner2@example.com> \(Uptown) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 394.00 Tm (Barber Studio\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 430.00 Tm (Assigned-shop management role. Full operational create,) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 418.00 Tm (edit, and archive access for barbers, products,) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 406.00 Tm (customers, appointments, sales, and expenses inside) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 394.00 Tm (assigned shops. Cannot create or edit shops or access) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 382.00 Tm (unassigned shops.) Tj ET
+36.00 320.00 720.00 56.00 re S
+166.00 376.00 m 166.00 320.00 l S
+416.00 376.00 m 416.00 320.00 l S
+BT /F2 10 Tf 1 0 0 1 40.00 362.00 Tm (Shop Manager) Tj ET
+BT /F2 10 Tf 1 0 0 1 40.00 350.00 Tm (\(shop_manager\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 362.00 Tm (manager1 <manager@example.com> \(Downtown) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 350.00 Tm (Barber Lounge\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 362.00 Tm (Currently the same application permissions as Shop) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 350.00 Tm (Owner: full operational create, edit, and archive) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 338.00 Tm (access inside assigned shops. Cannot create or edit) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 326.00 Tm (shops or access unassigned shops.) Tj ET
+36.00 264.00 720.00 56.00 re S
+166.00 320.00 m 166.00 264.00 l S
+416.00 320.00 m 416.00 264.00 l S
+BT /F2 10 Tf 1 0 0 1 40.00 306.00 Tm (Cashier / Front Desk) Tj ET
+BT /F2 10 Tf 1 0 0 1 40.00 294.00 Tm (\(cashier\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 306.00 Tm (cashier1 <cashier@example.com> \(Downtown) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 294.00 Tm (Barber Lounge\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 306.00 Tm (Assigned-shop front-desk role. Can view operational) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 294.00 Tm (lists and create or edit customers, appointments,) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 282.00 Tm (sales, and expenses. Cannot manage shops, barbers, or) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 270.00 Tm (products, and cannot archive business records.) Tj ET
+36.00 208.00 720.00 56.00 re S
+166.00 264.00 m 166.00 208.00 l S
+416.00 264.00 m 416.00 208.00 l S
+BT /F2 10 Tf 1 0 0 1 40.00 250.00 Tm (Barber) Tj ET
+BT /F2 10 Tf 1 0 0 1 40.00 238.00 Tm (\(barber\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 170.00 250.00 Tm (None assigned) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 250.00 Tm (Assigned-shop read-only operational visibility in the) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 238.00 Tm (web UI. Can access the dashboard, reports, audit log,) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 226.00 Tm (settings, and list pages, but cannot create, edit,) Tj ET
+BT /F1 10 Tf 1 0 0 1 420.00 214.00 Tm (archive, or use operational write APIs.) Tj ET
+endstream
+endobj
+4 0 obj
+<< /Type /Pages /Count 1 /Kids [5 0 R] >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 4 0 R /MediaBox [0 0 792 612] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 3 0 R >>
+endobj
+6 0 obj
+<< /Type /Catalog /Pages 4 0 R >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000015 00000 n 
+0000000083 00000 n 
+0000000156 00000 n 
+0000004652 00000 n 
+0000004709 00000 n 
+0000004845 00000 n 
+trailer
+<< /Size 7 /Root 6 0 R >>
+startxref
+4894
+%%EOF

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django import forms
+from django.contrib.auth.forms import PasswordChangeForm
 
 from apps.core.services import get_shop_queryset_for_user
 
@@ -19,6 +20,18 @@ class LoginForm(forms.Form):
         # LoginView passes request to the authentication form contract.
         super().__init__(*args, **kwargs)
         self.request = request
+
+
+class AppPasswordChangeForm(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        field_attrs = {
+            "old_password": {"autocomplete": "current-password"},
+            "new_password1": {"autocomplete": "new-password"},
+            "new_password2": {"autocomplete": "new-password"},
+        }
+        for field_name, attrs in field_attrs.items():
+            self.fields[field_name].widget.attrs.update({"class": "form-control", **attrs})
 
 
 class ShopSelectorForm(forms.Form):

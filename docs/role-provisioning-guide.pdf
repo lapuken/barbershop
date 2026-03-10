@@ -1,0 +1,282 @@
+%PDF-1.4
+%‚„œ”
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
+endobj
+2 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
+endobj
+3 0 obj
+<< /Length 4108 >>
+stream
+0.4 w
+BT /F2 18 Tf 1 0 0 1 48.00 744.00 Tm (Smart Barber Shops Role Provisioning Guide) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 726.00 Tm (Generated: 2026-03-09 | Page 1) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 712.00 Tm (Based on USER_ROLES.md and the supported provisioning paths in the repository.) Tj ET
+48.00 712.00 m 564.00 712.00 l S
+BT /F2 13 Tf 1 0 0 1 48.00 694.00 Tm (Overview) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 677.00 Tm (- There are two supported provisioning paths today: the JSON-driven go-live) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 664.00 Tm (  initializer for controlled batches, and Django admin for one-off additions later.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 651.00 Tm (- platform_admin users do not get UserShopAccess rows.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 638.00 Tm (- Every non-platform_admin user must have at least one active UserShopAccess row.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 625.00 Tm (- Only platform_admin should have is_superuser set to true.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 612.00 Tm (- Set a strong temporary password and must_change_password = true for normal human) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 599.00 Tm (  users.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 586.00 Tm (- Barber login accounts are separate from Barber business records used by scheduling) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 573.00 Tm (  and operational flows.) Tj ET
+BT /F2 13 Tf 1 0 0 1 48.00 552.00 Tm (Quick Reference) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 535.00 Tm (- Platform Admin \(platform_admin\): json path platform_admin, is_staff=true,) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 522.00 Tm (  is_superuser=true, UserShopAccess=not required.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 509.00 Tm (- Shop Owner \(shop_owner\): json path shops[].users[], is_staff=true,) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 496.00 Tm (  is_superuser=false, UserShopAccess=required.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 483.00 Tm (- Shop Manager \(shop_manager\): json path shops[].users[], is_staff=true,) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 470.00 Tm (  is_superuser=false, UserShopAccess=required.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 457.00 Tm (- Cashier / Front Desk \(cashier\): json path shops[].users[], is_staff=false,) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 444.00 Tm (  is_superuser=false, UserShopAccess=required.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 431.00 Tm (- Barber \(barber\): json path shops[].users[], is_staff=false, is_superuser=false,) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 418.00 Tm (  UserShopAccess=required.) Tj ET
+BT /F2 13 Tf 1 0 0 1 48.00 383.00 Tm (Platform Admin \(platform_admin\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 366.00 Tm (System-wide administrator who can work across all shops.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 349.00 Tm (- Go-live JSON path: platform_admin) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 336.00 Tm (- is_staff: true) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 323.00 Tm (- is_superuser: true) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 310.00 Tm (- UserShopAccess required: no) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 291.00 Tm (Go-live initializer) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 277.00 Tm (1. Add or update the top-level platform_admin object in golive-init.json.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 264.00 Tm (2. Set username, email, password, and optional phone.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 251.00 Tm (3. Use must_change_password: true for a real human admin account.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 238.00 Tm (4. Run ./scripts/initialize-golive.sh /path/to/golive-init.json.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 225.00 Tm (5. Do not add a UserShopAccess entry for this user.) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 206.00 Tm (Example JSON) Tj ET
+48.00 101.00 516.00 91.00 re S
+BT /F1 9 Tf 1 0 0 1 54.00 180.00 Tm ("platform_admin": {) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 169.00 Tm (  "username": "platformadmin",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 158.00 Tm (  "email": "admin@example.com",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 147.00 Tm (  "password": "TemporaryAdminPass123!",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 136.00 Tm (  "phone": "+265-999-000-001",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 125.00 Tm (  "must_change_password": true) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 114.00 Tm (}) Tj ET
+endstream
+endobj
+4 0 obj
+<< /Length 3683 >>
+stream
+0.4 w
+BT /F2 18 Tf 1 0 0 1 48.00 744.00 Tm (Smart Barber Shops Role Provisioning Guide) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 726.00 Tm (Generated: 2026-03-09 | Page 2) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 712.00 Tm (Based on USER_ROLES.md and the supported provisioning paths in the repository.) Tj ET
+48.00 712.00 m 564.00 712.00 l S
+BT /F2 11 Tf 1 0 0 1 48.00 694.00 Tm (Django admin) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 680.00 Tm (1. Open /admin/ and create a new User.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 667.00 Tm (2. Set username, email, role = platform_admin, and a strong temporary password.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 654.00 Tm (3. Set is_active = true, is_staff = true, and is_superuser = true.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 641.00 Tm (4. Set must_change_password = true.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 628.00 Tm (5. Save the user.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 615.00 Tm (6. Do not create a UserShopAccess row for this user.) Tj ET
+48.00 598.00 m 564.00 598.00 l S
+BT /F2 13 Tf 1 0 0 1 48.00 576.00 Tm (Shop Owner \(shop_owner\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 559.00 Tm (Branch owner with full operational control inside assigned shops.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 542.00 Tm (- Go-live JSON path: shops[].users[]) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 529.00 Tm (- is_staff: true) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 516.00 Tm (- is_superuser: false) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 503.00 Tm (- UserShopAccess required: yes) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 484.00 Tm (Go-live initializer) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 470.00 Tm (1. Add the user under the correct shop's shops[].users[] list.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 457.00 Tm (2. Set "role": "shop_owner".) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 444.00 Tm (3. Set username, email, password, and optional phone.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 431.00 Tm (4. Leave shop_access_is_active as true unless you intentionally want inactive access.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 418.00 Tm (5. Run ./scripts/initialize-golive.sh /path/to/golive-init.json.) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 399.00 Tm (Example JSON) Tj ET
+48.00 283.00 516.00 102.00 re S
+BT /F1 9 Tf 1 0 0 1 54.00 373.00 Tm ({) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 362.00 Tm (  "username": "owner-downtown",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 351.00 Tm (  "email": "owner@example.com",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 340.00 Tm (  "password": "TemporaryOwnerPass123!",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 329.00 Tm (  "role": "shop_owner",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 318.00 Tm (  "phone": "+265-999-000-010",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 307.00 Tm (  "must_change_password": true) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 296.00 Tm (}) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 277.00 Tm (Django admin) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 263.00 Tm (1. Open /admin/ and create a new User.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 250.00 Tm (2. Set role = shop_owner.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 237.00 Tm (3. Set is_active = true, is_staff = true, and is_superuser = false.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 224.00 Tm (4. Set a strong temporary password and must_change_password = true.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 211.00 Tm (5. Save the user.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 198.00 Tm (6. Create one or more UserShopAccess rows for the shops this owner should access.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 185.00 Tm (7. Set each UserShopAccess.is_active = true.) Tj ET
+48.00 168.00 m 564.00 168.00 l S
+BT /F2 13 Tf 1 0 0 1 48.00 146.00 Tm (Shop Manager \(shop_manager\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 129.00 Tm (Daily operations manager. In the current app, this role has the same permissions as) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 116.00 Tm (shop_owner.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Length 3676 >>
+stream
+0.4 w
+BT /F2 18 Tf 1 0 0 1 48.00 744.00 Tm (Smart Barber Shops Role Provisioning Guide) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 726.00 Tm (Generated: 2026-03-09 | Page 3) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 712.00 Tm (Based on USER_ROLES.md and the supported provisioning paths in the repository.) Tj ET
+48.00 712.00 m 564.00 712.00 l S
+BT /F1 10 Tf 1 0 0 1 48.00 694.00 Tm (- Go-live JSON path: shops[].users[]) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 681.00 Tm (- is_staff: true) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 668.00 Tm (- is_superuser: false) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 655.00 Tm (- UserShopAccess required: yes) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 636.00 Tm (Go-live initializer) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 622.00 Tm (1. Add the user under the correct shop's shops[].users[] list.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 609.00 Tm (2. Set "role": "shop_manager".) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 596.00 Tm (3. Set username, email, password, and optional phone.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 583.00 Tm (4. Keep shop_access_is_active set to true unless you need disabled access.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 570.00 Tm (5. Run ./scripts/initialize-golive.sh /path/to/golive-init.json.) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 551.00 Tm (Example JSON) Tj ET
+48.00 435.00 516.00 102.00 re S
+BT /F1 9 Tf 1 0 0 1 54.00 525.00 Tm ({) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 514.00 Tm (  "username": "manager-downtown",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 503.00 Tm (  "email": "manager@example.com",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 492.00 Tm (  "password": "TemporaryManagerPass123!",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 481.00 Tm (  "role": "shop_manager",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 470.00 Tm (  "phone": "+265-999-000-011",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 459.00 Tm (  "must_change_password": true) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 448.00 Tm (}) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 429.00 Tm (Django admin) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 415.00 Tm (1. Open /admin/ and create a new User.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 402.00 Tm (2. Set role = shop_manager.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 389.00 Tm (3. Set is_active = true, is_staff = true, and is_superuser = false.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 376.00 Tm (4. Set a strong temporary password and must_change_password = true.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 363.00 Tm (5. Save the user.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 350.00 Tm (6. Create one or more active UserShopAccess rows for the shops this manager should) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 337.00 Tm (   use.) Tj ET
+48.00 320.00 m 564.00 320.00 l S
+BT /F2 13 Tf 1 0 0 1 48.00 298.00 Tm (Cashier / Front Desk \(cashier\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 281.00 Tm (Front-desk staff who handle appointments, sales, customers, and expense entry.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 264.00 Tm (- Go-live JSON path: shops[].users[]) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 251.00 Tm (- is_staff: false) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 238.00 Tm (- is_superuser: false) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 225.00 Tm (- UserShopAccess required: yes) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 206.00 Tm (Go-live initializer) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 192.00 Tm (1. Add the user under the correct shop's shops[].users[] list.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 179.00 Tm (2. Set "role": "cashier".) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 166.00 Tm (3. Set username, email, password, and optional phone.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 153.00 Tm (4. Keep shop_access_is_active set to true unless you intentionally want inactive) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 140.00 Tm (   access.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 127.00 Tm (5. Run ./scripts/initialize-golive.sh /path/to/golive-init.json.) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Length 3426 >>
+stream
+0.4 w
+BT /F2 18 Tf 1 0 0 1 48.00 744.00 Tm (Smart Barber Shops Role Provisioning Guide) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 726.00 Tm (Generated: 2026-03-09 | Page 4) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 712.00 Tm (Based on USER_ROLES.md and the supported provisioning paths in the repository.) Tj ET
+48.00 712.00 m 564.00 712.00 l S
+BT /F2 11 Tf 1 0 0 1 48.00 694.00 Tm (Example JSON) Tj ET
+48.00 578.00 516.00 102.00 re S
+BT /F1 9 Tf 1 0 0 1 54.00 668.00 Tm ({) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 657.00 Tm (  "username": "cashier-downtown",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 646.00 Tm (  "email": "cashier@example.com",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 635.00 Tm (  "password": "TemporaryCashierPass123!",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 624.00 Tm (  "role": "cashier",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 613.00 Tm (  "phone": "+265-999-000-012",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 602.00 Tm (  "must_change_password": true) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 591.00 Tm (}) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 572.00 Tm (Django admin) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 558.00 Tm (1. Open /admin/ and create a new User.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 545.00 Tm (2. Set role = cashier.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 532.00 Tm (3. Set is_active = true, is_staff = false, and is_superuser = false.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 519.00 Tm (4. Set a strong temporary password and must_change_password = true.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 506.00 Tm (5. Save the user.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 493.00 Tm (6. Create one or more active UserShopAccess rows for the shops this cashier should) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 480.00 Tm (   use.) Tj ET
+48.00 463.00 m 564.00 463.00 l S
+BT /F2 13 Tf 1 0 0 1 48.00 441.00 Tm (Barber \(barber\)) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 424.00 Tm (Read-only operational user who needs sign-in access inside assigned shops.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 407.00 Tm (- Go-live JSON path: shops[].users[]) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 394.00 Tm (- is_staff: false) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 381.00 Tm (- is_superuser: false) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 368.00 Tm (- UserShopAccess required: yes) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 349.00 Tm (Go-live initializer) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 335.00 Tm (1. Add the login account under the correct shop's shops[].users[] list.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 322.00 Tm (2. Set "role": "barber".) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 309.00 Tm (3. Set username, email, password, and optional phone.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 296.00 Tm (4. Keep shop_access_is_active set to true unless you intentionally want inactive) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 283.00 Tm (   access.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 270.00 Tm (5. Run ./scripts/initialize-golive.sh /path/to/golive-init.json.) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 251.00 Tm (Example JSON) Tj ET
+48.00 135.00 516.00 102.00 re S
+BT /F1 9 Tf 1 0 0 1 54.00 225.00 Tm ({) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 214.00 Tm (  "username": "barber-downtown",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 203.00 Tm (  "email": "barber@example.com",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 192.00 Tm (  "password": "TemporaryBarberPass123!",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 181.00 Tm (  "role": "barber",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 170.00 Tm (  "phone": "+265-999-000-013",) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 159.00 Tm (  "must_change_password": true) Tj ET
+BT /F1 9 Tf 1 0 0 1 54.00 148.00 Tm (}) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Length 1391 >>
+stream
+0.4 w
+BT /F2 18 Tf 1 0 0 1 48.00 744.00 Tm (Smart Barber Shops Role Provisioning Guide) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 726.00 Tm (Generated: 2026-03-09 | Page 5) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 712.00 Tm (Based on USER_ROLES.md and the supported provisioning paths in the repository.) Tj ET
+48.00 712.00 m 564.00 712.00 l S
+BT /F2 11 Tf 1 0 0 1 48.00 694.00 Tm (Django admin) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 680.00 Tm (1. Open /admin/ and create a new User.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 667.00 Tm (2. Set role = barber.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 654.00 Tm (3. Set is_active = true, is_staff = false, and is_superuser = false.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 641.00 Tm (4. Set a strong temporary password and must_change_password = true.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 628.00 Tm (5. Save the user.) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 615.00 Tm (6. Create one or more active UserShopAccess rows for the shops this barber should) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 602.00 Tm (   access.) Tj ET
+BT /F2 11 Tf 1 0 0 1 48.00 585.00 Tm (Notes) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 571.00 Tm (- If the person should appear in barber lists, appointment booking, or sale) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 558.00 Tm (  attribution, also create or update the matching Barber business record for that) Tj ET
+BT /F1 10 Tf 1 0 0 1 48.00 545.00 Tm (  shop.) Tj ET
+48.00 526.00 m 564.00 526.00 l S
+endstream
+endobj
+8 0 obj
+<< /Type /Pages /Count 5 /Kids [9 0 R 10 0 R 11 0 R 12 0 R 13 0 R] >>
+endobj
+9 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 3 0 R >>
+endobj
+10 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 4 0 R >>
+endobj
+11 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 5 0 R >>
+endobj
+12 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 6 0 R >>
+endobj
+13 0 obj
+<< /Type /Page /Parent 8 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 7 0 R >>
+endobj
+14 0 obj
+<< /Type /Catalog /Pages 8 0 R >>
+endobj
+xref
+0 15
+0000000000 65535 f 
+0000000015 00000 n 
+0000000083 00000 n 
+0000000156 00000 n 
+0000004316 00000 n 
+0000008051 00000 n 
+0000011779 00000 n 
+0000015257 00000 n 
+0000016700 00000 n 
+0000016785 00000 n 
+0000016921 00000 n 
+0000017058 00000 n 
+0000017195 00000 n 
+0000017332 00000 n 
+0000017469 00000 n 
+trailer
+<< /Size 15 /Root 14 0 R >>
+startxref
+17519
+%%EOF

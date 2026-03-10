@@ -6,10 +6,16 @@
         <h1 class="h3 mb-1">Operations Dashboard</h1>
         <p class="text-muted mb-0">Daily visibility across sales, expenses, commissions, bookings, and shop activity.</p>
     </div>
+    {% if can_edit_appointments or can_edit_sales %}
     <div class="d-flex flex-wrap gap-2">
+        {% if can_edit_appointments %}
         <a class="btn btn-outline-primary" href="{% url 'appointments:create' %}">Book Appointment</a>
+        {% endif %}
+        {% if can_edit_sales %}
         <a class="btn btn-primary" href="{% url 'sales:create' %}">Record Daily Sale</a>
+        {% endif %}
     </div>
+    {% endif %}
 </div>
 <div class="row g-3 mb-4">
     <div class="col-md-6 col-xl-3"><div class="metric-card"><span>Sales Today</span><strong>{{ dashboard.today.total_sales }}</strong></div></div>

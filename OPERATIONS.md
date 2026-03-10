@@ -52,7 +52,7 @@ cd /opt/smartbarber/app
 ./scripts/initialize-golive.sh /opt/smartbarber/env/golive-init.json
 ```
 
-For the required JSON fields and table mapping, use [`docs/golive-initialization.md`](docs/golive-initialization.md).
+For the required JSON fields, password initialization workflow, and production host runbook, use [`docs/golive-initialization.md`](docs/golive-initialization.md). For the short tester collection worksheet, use [`docs/golive-tester-handoff.md`](docs/golive-tester-handoff.md).
 
 ## Restart and Recovery
 

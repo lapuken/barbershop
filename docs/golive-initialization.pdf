@@ -1,99 +1,264 @@
 %PDF-1.4
-%“Œ‹ž ReportLab Generated PDF document (opensource)
+%âãÏÓ
 1 0 obj
-<<
-/F1 2 0 R /F2 3 0 R /F3 4 0 R
->>
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier >>
 endobj
 2 0 obj
-<<
-/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
->>
+<< /Type /Font /Subtype /Type1 /BaseFont /Courier-Bold >>
 endobj
 3 0 obj
-<<
-/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
->>
+<< /Length 3665 >>
+stream
+BT /F2 18 Tf 1 0 0 1 40.00 534.98 Tm (Go-Live Initialization) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 503.48 Tm (Migrations create the schema. The go-live initializer creates the minimum business records the app needs for first production) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 489.98 Tm (use.) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 467.48 Tm (Use the JSON-driven loader:) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 438.23 Tm (./scripts/initialize-golive.sh /opt/smartbarber/env/golive-init.json) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 407.63 Tm (Keep the JSON file outside Git because it contains real user passwords. Start from ops/golive-init.example.json.) Tj ET
+BT /F2 14 Tf 1 0 0 1 40.00 379.73 Tm (Seeded Tables) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 349.58 Tm (Database table | Go-live requirement | Required fields on first initialization | Optional fields | Notes) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 337.43 Tm (accounts_user \(platform_admin\) | Required | username, email, password | phone, must_change_password, is_active | The initializer creates or) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 325.28 Tm (updates one active platform admin with role platform_admin, is_staff=true, and is_superuser=true.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 313.13 Tm (shops_shop | At least 1 active shop | branch_code, name, address, phone | whatsapp_number, telegram_handle, currency, timezone, is_active |) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 300.98 Tm (branch_code is the stable lookup key for reruns.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 288.83 Tm (accounts_user \(shops[].users[]\) | At least 1 active operator per active shop | username, email, password, role | phone,) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 276.68 Tm (must_change_password, is_active, shop_access_is_active | Valid roles here are shop_owner, shop_manager, cashier, or barber. Each active) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 264.53 Tm (shop must end up with at least one active shop_owner, shop_manager, or cashier.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 252.38 Tm (accounts_usershopaccess | Required for every non-platform-admin shop user | Implied by each shops[].users[] entry | shop_access_is_active |) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 240.23 Tm (Created automatically by the initializer when a shop user is attached to a shop.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 228.08 Tm (barbers_barber | At least 1 active barber per active shop | full_name | employee_code, phone, commission_rate, is_active | Required so the) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 215.93 Tm (sales and appointment flows can operate on day one.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 203.78 Tm (products_product | Optional | sku, name, category, sale_price | cost_price, is_active | Only required if the branch will sell stocked) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 191.63 Tm (products immediately at go-live.) Tj ET
+BT /F2 14 Tf 1 0 0 1 40.00 163.73 Tm (Schema-Only Tables) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 132.23 Tm (These tables are created by migrations but do not need seed rows for go-live:) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 111.08 Tm (Database table | How rows are created) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 98.93 Tm (appointments_customer | Created when real customers are entered.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 86.78 Tm (appointments_appointment | Created when appointments are booked.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 74.63 Tm (appointments_appointmentnotification | Created automatically when confirmation delivery runs.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 62.48 Tm (sales_sale | Created when daily sales are recorded.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 50.33 Tm (sales_saleitem | Created together with each sale.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 38.18 Tm (expenses_expense | Created when expenses are logged.) Tj ET
+endstream
 endobj
 4 0 obj
-<<
-/BaseFont /Courier /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font
->>
+<< /Length 3906 >>
+stream
+BT /F1 9 Tf 1 0 0 1 48.00 547.13 Tm (audit_auditlog | Created by normal application activity.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 534.98 Tm (audit_securityevent | Created by authentication and security events.) Tj ET
+BT /F2 14 Tf 1 0 0 1 40.00 507.08 Tm (JSON Field Map) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 476.93 Tm (JSON path | Underlying table\(s\) | Required fields | Optional fields) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 464.78 Tm (platform_admin | accounts_user | username, email, password | phone, must_change_password, is_active) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 452.63 Tm (shops[] | shops_shop | branch_code, name, address, phone | whatsapp_number, telegram_handle, currency, timezone, is_active) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 440.48 Tm (shops[].users[] | accounts_user, accounts_usershopaccess | username, email, password, role | phone, must_change_password, is_active,) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 428.33 Tm (shop_access_is_active) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 416.18 Tm (shops[].barbers[] | barbers_barber | full_name | employee_code, phone, commission_rate, is_active) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 404.03 Tm (shops[].products[] | products_product | sku, name, category, sale_price | cost_price, is_active) Tj ET
+BT /F2 14 Tf 1 0 0 1 40.00 376.13 Tm (Initial Seeding Required From Tester) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 344.63 Tm (Use this checklist when the tester or go-live coordinator is collecting the real production values that must go into) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 331.13 Tm (golive-init.json.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 309.98 Tm (Tester must provide | JSON section | Minimum count | Required fields | Optional fields | Notes) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 297.83 Tm (Platform admin login | platform_admin | 1 | username, email, password | phone | This is the system-wide admin account. Use a real email and) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 285.68 Tm (a strong temporary password.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 273.53 Tm (Shop or branch record | shops[] | 1 per active shop | branch_code, name, address, phone | whatsapp_number, telegram_handle, currency,) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 261.38 Tm (timezone | Keep branch_code stable because reruns match by it.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 249.23 Tm (Shop staff login | shops[].users[] | At least 1 active shop_owner, shop_manager, or cashier per active shop | username, email, password,) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 237.08 Tm (role | phone | Add extra users only if they need access on day one.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 224.93 Tm (Barber profile | shops[].barbers[] | At least 1 active barber per active shop | full_name | employee_code, phone, commission_rate |) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 212.78 Tm (Required for appointment and sales flows to work on day one.) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 200.63 Tm (Product catalog | shops[].products[] | Optional | sku, name, category, sale_price | cost_price | Only collect this if the shop will sell) Tj ET
+BT /F1 9 Tf 1 0 0 1 48.00 188.48 Tm (stocked products immediately at go-live.) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 165.98 Tm (Before the file is approved, the tester should also confirm that all usernames, branch codes, phone numbers, and email) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 152.48 Tm (addresses are final production values and that every seeded human account will be forced to change the temporary password at) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 138.98 Tm (first login.) Tj ET
+BT /F2 14 Tf 1 0 0 1 40.00 111.08 Tm (Operator Workflow) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 72.83 Tm (cp /opt/smartbarber/app/ops/golive-init.example.json /opt/smartbarber/env/golive-init.json) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 60.68 Tm (nano /opt/smartbarber/env/golive-init.json) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 48.53 Tm (cd /opt/smartbarber/app) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 36.38 Tm (./scripts/initialize-golive.sh /opt/smartbarber/env/golive-init.json) Tj ET
+endstream
 endobj
 5 0 obj
-<<
-/Contents 10 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Parent 9 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
->>
+<< /Length 2536 >>
+stream
+BT /F1 10 Tf 1 0 0 1 40.00 528.68 Tm (If you intentionally need to force the file's passwords onto existing users, rerun with:) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 499.43 Tm (./scripts/initialize-golive.sh /opt/smartbarber/env/golive-init.json --reset-passwords) Tj ET
+BT /F2 14 Tf 1 0 0 1 40.00 463.43 Tm (Production Runbook) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 431.93 Tm (Use this runbook when you are creating the first real users for a production branch or replacing a controlled batch of) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 418.43 Tm (temporary passwords.) Tj ET
+BT /F2 12 Tf 1 0 0 1 40.00 393.23 Tm (1. Prepare the server-side JSON file) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 361.73 Tm (Create the file on the production host and keep it outside Git:) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 332.48 Tm (sudo install -d -m 750 /opt/smartbarber/env) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 320.33 Tm (sudo cp /opt/smartbarber/app/ops/golive-init.example.json /opt/smartbarber/env/golive-init.json) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 308.18 Tm (sudo chmod 600 /opt/smartbarber/env/golive-init.json) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 296.03 Tm (sudo nano /opt/smartbarber/env/golive-init.json) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 265.43 Tm (Use this structure and replace every placeholder value before you run anything:) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 236.18 Tm ({) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 224.03 Tm (  "platform_admin": {) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 211.88 Tm (    "username": "platformadmin",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 199.73 Tm (    "email": "admin@machinjiri.net",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 187.58 Tm (    "password": "TemporaryAdminPass123!",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 175.43 Tm (    "phone": "+265-999-000-001",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 163.28 Tm (    "must_change_password": true) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 151.13 Tm (  },) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 138.98 Tm (  "shops": [) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 126.83 Tm (    {) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 114.68 Tm (      "branch_code": "BLZ-001",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 102.53 Tm (      "name": "Machinjiri Barber Lounge",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 90.38 Tm (      "address": "101 Example Road, Blantyre",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 78.23 Tm (      "phone": "+265-999-000-010",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 66.08 Tm (      "whatsapp_number": "265999000010",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 53.93 Tm (      "telegram_handle": "machinjiri_barber_lounge",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 41.78 Tm (      "currency": "MWK",) Tj ET
+endstream
 endobj
 6 0 obj
-<<
-/Contents 11 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Parent 9 0 R /Resources <<
-/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
->> /Rotate 0 /Trans <<
-
->> 
-  /Type /Page
->>
+<< /Length 2797 >>
+stream
+BT /F1 9 Tf 1 0 0 1 64.00 547.13 Tm (      "timezone": "Africa/Blantyre",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 534.98 Tm (      "users": [) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 522.83 Tm (        {) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 510.68 Tm (          "username": "owner-machinjiri",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 498.53 Tm (          "email": "owner@machinjiri.net",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 486.38 Tm (          "password": "TemporaryOwnerPass123!",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 474.23 Tm (          "role": "shop_owner",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 462.08 Tm (          "phone": "+265-999-000-011",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 449.93 Tm (          "must_change_password": true) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 437.78 Tm (        },) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 425.63 Tm (        {) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 413.48 Tm (          "username": "cashier-machinjiri",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 401.33 Tm (          "email": "cashier@machinjiri.net",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 389.18 Tm (          "password": "TemporaryCashierPass123!",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 377.03 Tm (          "role": "cashier",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 364.88 Tm (          "phone": "+265-999-000-012",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 352.73 Tm (          "must_change_password": true) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 340.58 Tm (        }) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 328.43 Tm (      ],) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 316.28 Tm (      "barbers": [) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 304.13 Tm (        {) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 291.98 Tm (          "full_name": "Alex Banda",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 279.83 Tm (          "employee_code": "BR-001",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 267.68 Tm (          "phone": "+265-999-000-021",) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 255.53 Tm (          "commission_rate": "45.00") Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 243.38 Tm (        }) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 231.23 Tm (      ],) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 219.08 Tm (      "products": []) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 206.93 Tm (    }) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 194.78 Tm (  ]) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 182.63 Tm (}) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 152.03 Tm (Minimum operator rules:) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 129.53 Tm (- Use strong temporary passwords with at least 12 characters.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 116.03 Tm (- Set must_change_password: true for every human account.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 102.53 Tm (- Keep usernames stable because reruns match existing users by username.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 89.03 Tm (- Remove example emails, phone numbers, and passwords before saving the file.) Tj ET
+BT /F2 12 Tf 1 0 0 1 40.00 63.83 Tm (2. Run the initializer on the production host) Tj ET
+endstream
 endobj
 7 0 obj
-<<
-/PageMode /UseNone /Pages 9 0 R /Type /Catalog
->>
+<< /Length 2366 >>
+stream
+BT /F1 10 Tf 1 0 0 1 40.00 545.78 Tm (Run the reviewed initializer from the app checkout:) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 516.53 Tm (cd /opt/smartbarber/app) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 504.38 Tm (./scripts/initialize-golive.sh /opt/smartbarber/env/golive-init.json) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 473.78 Tm (Expected result:) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 451.28 Tm (- Missing users, shops, shop access rows, barbers, and products are created.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 437.78 Tm (- Existing users are updated by username.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 424.28 Tm (- Existing passwords stay unchanged unless you explicitly pass --reset-passwords.) Tj ET
+BT /F2 12 Tf 1 0 0 1 40.00 399.08 Tm (3. Verify the result) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 367.58 Tm (Check the host, then verify with an actual login:) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 338.33 Tm (cd /opt/smartbarber/app) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 326.18 Tm (./scripts/healthcheck.sh local) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 314.03 Tm (docker compose --env-file /opt/smartbarber/env/.env ps) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 301.88 Tm (docker compose --env-file /opt/smartbarber/env/.env logs --tail=100 web) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 271.28 Tm (Then confirm all of the following in the browser:) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 248.78 Tm (- The new username can sign in with the temporary password.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 235.28 Tm (- The app immediately redirects that user to /accounts/password-change/.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 221.78 Tm (- After the password change, the user can reach the dashboard and shop selector normally.) Tj ET
+BT /F2 12 Tf 1 0 0 1 40.00 196.58 Tm (4. Use --reset-passwords only when you mean it) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 165.08 Tm (Only rerun with --reset-passwords when you intentionally want the JSON file to overwrite the passwords of already-existing) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 151.58 Tm (users:) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 122.33 Tm (cd /opt/smartbarber/app) Tj ET
+BT /F1 9 Tf 1 0 0 1 64.00 110.18 Tm (./scripts/initialize-golive.sh /opt/smartbarber/env/golive-init.json --reset-passwords) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 79.58 Tm (Do not use this for normal reruns. It is a deliberate password reset operation.) Tj ET
+BT /F2 12 Tf 1 0 0 1 40.00 54.38 Tm (5. Day-2 user management after go-live) Tj ET
+endstream
 endobj
 8 0 obj
-<<
-/Author (OpenAI Codex) /CreationDate (D:20260307223542-05'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20260307223542-05'00') /Producer (ReportLab PDF Library - \(opensource\)) 
-  /Subject (\(unspecified\)) /Title (Go-Live Initialization) /Trapped /False
->>
+<< /Length 2441 >>
+stream
+BT /F1 10 Tf 1 0 0 1 40.00 545.78 Tm (Use the go-live initializer for the first real production load or a controlled batch update. For one-off user additions later,) Tj ET
+BT /F1 10 Tf 1 0 0 1 40.00 532.28 Tm (use Django admin:) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 509.78 Tm (- Create the User record with the correct role.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 496.28 Tm (- Set a temporary strong password.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 482.78 Tm (- Set must_change_password = true.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 469.28 Tm (- Create the corresponding UserShopAccess row for every non-platform-admin user.) Tj ET
+BT /F2 14 Tf 1 0 0 1 40.00 441.38 Tm (Password Rotation Guidance) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 409.88 Tm (- Treat every password in the go-live JSON as temporary and deliver it to the user through a separate secure channel.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 396.38 Tm (- Set must_change_password: true for every seeded human account so the app redirects that user to) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 382.88 Tm (/accounts/password-change/ immediately after login.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 369.38 Tm (- Do not rerun the initializer with --reset-passwords unless you intentionally want to overwrite an existing user's) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 355.88 Tm (password with the value in the JSON file.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 342.38 Tm (- If a user cannot sign in with the temporary password, verify that the initializer was actually run with the intended JSON) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 328.88 Tm (and that the username exists in the live database before resetting anything.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 315.38 Tm (- If a user forgets the rotated password later, use the normal password reset workflow from the login page.) Tj ET
+BT /F2 14 Tf 1 0 0 1 40.00 287.48 Tm (Idempotency Rules) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 255.98 Tm (- Shops are matched by branch_code.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 242.48 Tm (- Shop users are matched by username.) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 228.98 Tm (- Shop access rows are matched by \(user, shop\).) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 215.48 Tm (- Barbers are matched by employee_code when present, otherwise \(shop, full_name\).) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 201.98 Tm (- Products are matched by \(shop, sku\).) Tj ET
+BT /F1 10 Tf 1 0 0 1 60.00 188.48 Tm (- Existing passwords are left unchanged unless --reset-passwords is supplied.) Tj ET
+endstream
 endobj
 9 0 obj
-<<
-/Count 2 /Kids [ 5 0 R 6 0 R ] /Type /Pages
->>
+<< /Type /Page /Parent 15 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 3 0 R >>
 endobj
 10 0 obj
-<<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 2469
->>
-stream
-Gb!#^=``U]&q9SYka/F"UfK<JO\AarZFe6>Sg:)l-'M4m,\1mg&deW!ir&X0!$40lMIrB\N,'[U!7;%cmf#K(!?6M.rL"?"s&m8<k70I(XEWUtQ4N;"i3W+4Dg+r>du1Fdn6@INK,$S&6ae&q%sRfUdk6H;(:]_>Y,rI\oho\g>G:N+35/-rnX;&EaZ`PrZHQiKo'?l21KM5Aom9ej"O$DiW5]ACF/b&1\uCR"<,j&3B":Nt`OFM&fAZoYS.\CZmO<s&:CCXJ)VYd=R4I[17Q\cYWC"o_E1j-:fN'1HW=ZjZ_K]f"al*4GV>/f*ES+i-82tRS<f)tGQ(V/fB>7l('[8H#-Xf^ElKt)0Q75<39#qlA.KB0t`6`9Grp+o+;=T6/8^m,7-bUEX2Rl3[%jJ--X];Un7DcB`'_e0eQ4HZ7dh7#;B*W]8$Gtnjn1Ebr[/=l]L6q0+lb2LYTQRrt1^Hj(F6sV#M:OD@lEL&PdR3=?gm+B2X/*g7$El5l>FH,Y)8Kk$8kH<dD(<ZXG&]JQ+c^;i/U/dCH.[+;JC[XZ5`8gMK/bZ@r_A><:-4YCXVUDD@9N>7&%m73$RBUL4V/W@Dc*=>kUg8-VQ_E%S;KTU@:[>@+q\)#4qV<oJK76g7FB6e"0ge#NI=;g0(C[JNaW[uY]N5(*pc'O;bZ?j]>Nr;FpYs@7u_MiTJ7fnc(4DORe&`fad+@9.t\&nM.[3@>pf_LJ#b>"$X1\=.8ClChTQ]+UCiS33baW="-\G\*a*EE]Z,ZobnpBAT[lTJ)rZE90NH=3nK!fpJ884G6UGJ\`&H[PY8`r:pR9(5(ahnlW`"_6$JIE!l=ilSin^=<g:DWNaGEmlDF7;ql^(C!hRsh]<#AF%K[[]b[rBiuhRD^Q)jL"A.Hm$Ks+W&iZ/fKlP_i*A]S4(f>Be`+Eg":.-0-E+POa9Bc?)*oY0lh4a\6LVQJ`:k3C75&jn'E%T,HQl)k^k3+'h,=:`WH_/<Loc%A3_BFJ)S%4D&UES7-8\/kgUSL%YjFG.UNqYPMKsb&kEnU,l,R:t5O/E+Qn:nGPoZiLL4,fOHYkW6`k)S%/5^[!aDIVZcUie$sm,:`XnBX?I4hgTkZ,s2"Ok!pV?bA[:2=/=cq2WA.&oPU#F_'X_d[Tr#3GFsq7a5"]quq]6E3HQiVKhG%,fgZtZi+,Q0C'Ie:3_(\XU8N%q2kHmpS-47g$qT$O-1,1A>_-nAd+>`0aTns-iFnSoXi/p4fEs'Gg/B);$g&K)BW<;dZ?S1pZIQt;82Q@5iY!"dc).k3>)/iG#rr/Fd[f<$9ou:6:'5ge+GXC6_-PYF,e($A9!stj7c*ZE!@X:hlrY\@OWlqMp4iR""iB;lrX2Bs/?ZI*Q?'(439ML6J&c8YREQeJcl^MDUF\.>68?tGh"Ant!ZqQU2JE@TB4gln8:n@*<^X_UU6\`f+bBU'q=r+Xk(M='C1eB5,b/Q3gp]8"CfHA#^WLSF1r2GraZ?"W[\YUWoB8LEOB'%u&f(`Z)nb:u?bMnUrW71GHW'\[KPIsp,:VWGT"0!]=blOFQpJ^U$YrVj7e3!n48QOc33[&eJUq@m)3;dbl9->ROoR!6)FO6-_I>Fpp<_jT#XuGa8Gi95Jlsb#KoE-f??E1^X;/ka;/Z)V$Guj@54Q!NrFVn-84M!llp$@O`aY\C<,51/:<YUr5)(RYe8m[TscJ6`(m0I=&,uM&Z8[`poc*C6IQWLE7fhk"$b*l$JX6P_<.="gF@?c"_F1/W."YM]UA!AWAPAjrYo*Xe!#P@.T5k.sij;BR9[m)S'F.VVfbIEJo[4Jj'+nI6X(_XGuq%pm9GQAY5n!as]0Q/Y8m50RB&IKs\SqE^$6aGbb`u@:Od*7H"VAVE1=!=l[`9BY[=8;goS`PWhml>@_rT!3*eEY]#d4Y&QD:QefXmWU_55VG%5+,nMYFfoG\*d7u[PnJ]?>R$_DEHJ;k!mVFW1+Y]'8(0D*p@D0X1BrBC<!/t3jH9];r+>$NHk;g6&h742r_"bh64P^hB2U^-sYN8_Uq\`X$J+TgVIN/@-F)kV+/Xf>7;`*\1O]S5&J!2c+S_ULP)C7%`fBBmLjMD8Os_`9^6sh6n)-VMPI]^XC4)9"1PT%Rhe4bC'O3mRhj%f+a!*s2_EFa3^)r+`Us<)q)f6rYbQ3nM6j*b(kh=IMKD`0`?rF]&h?FRQEb5"U]JK7$)P@:Cr@2i;$/q1VIN%R)!AJ/9K`.4L6WF+NELNV=kgGtluCfK07$2'0c[M?Er4671Loi@_39lkgA$>d]1cM(WserlWqbaZfl"ILF.HIS-H5L5lLTaq':0fqe<FKW@a-A_XoI`rHroL%"^@`W8W+OBc+4U&m#p^d,0f'.*Jlrr/$XS`25okHkkqMck8^2];<.Ac4>YR>r1NJp7am.3fCWLHjT/-4LQ/1WoBSSV[*0_1`&8UPp$B9DRoZ;FWU"Nt-`1SC'`~>endstream
+<< /Type /Page /Parent 15 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 4 0 R >>
 endobj
 11 0 obj
-<<
-/Filter [ /ASCII85Decode /FlateDecode ] /Length 1866
->>
-stream
-Gb!#]D3LGI&H7-n@_[#2akU=CM[fWP2JLWSRl>QfU"<^p+PS0S71sU1?f)S"CnJOOOsZ_=gU`ZW&!(nAg(a`ar$0a9Qi]BQ_X&-@@_m'g`%`66rWZ/b=7<=`4`YEY^>jGZi5b=&mMtCu\)Flpmt'GCF)0`diObEE&E)lT%&_?5=BHp*Op,e/X2e:RV%%bj5dLO!:>fAr?&`e_KsZn8$l>3YlEFZiROdlmNpE=9V"[hB^n69CK&p3=5$"[jiSRtTA\6$')T4<)(3mP.5`o!d)3lb!!7WJ\,\27sd-P7!p9A"n?m;Ng"-c9,OCO@o2%/&S=9]4D`@o?bCDIf$W%M1_$8#FNYmdXNKGYgh&u(02r=6-'V_eEX'M09B)<Vma:rXSd\N<=+REeL1YiMaSI:/H_TJm@XT,fL0g.f$"Z3V@nW:34la^=T0p<%=iSmrFYq"spN.n&,M]/Zqd0fBYh;or9rZ6P3/#uIc.C4%o&BVP@DXG-&g]uW=eIl,<R9snPt>W31tD5SG7NCJXW8'A,VW539be>ck=0T,6HRk-[3iThn9g?G&CB:n"M-?]ru$?9B`[9qh(p]I,,/;`;/>4hY[)f0A#+!@*b[`%a77pA=*ZK[:$'q^*#9eR7@pf!IXR73&^]/X$\BRY.WmN2$&fbQ<TWDKeOq_I<DSQ<lkU-Bud\RA29Gu:O=M/fI-V";h"r@&ng8>od%a9u[G`n=MD9EUqrR$SXkJl49d@$(Ye96$fq5^W):E30ge1tBY&61DM#JQgPu\n3CNP;*.I.`=7.%o;MHk+24a`?ro#4`4F1)2&rtX]]W86j*$i&QFNdIgY+cB2(+Yf]7b]qk(3Tnemkuof_4ZNV^iLr1;@gg]V%,NEZ._%Rm.K1Ef5u<,;/UIp1K1grpp^gC9DL;jJOVe,+H\%6TV\$!VJ>#3]>i15[UE$(PScmW<9_l3JM-fr's]5/psUT:lAdC8`70jL<EDdc-lg\A>R5R\Ci8"cX>k4+=L;s0qJW0UCm7W[mK1'3G/`a3d2Z.SC!"Pee3'[a!-<l$LSALRi`07]ec!^B8pF%:W<a8^KM1^MbqDh1`SZdNZeWN/`kmUR`jXdkhgAo<WsW>rBnb`jip^)RAmfK',uKb/"oR.7pU`#BaOl+.Ocg9"Z[hjLL3Q/mIMOj/b9^.qjNCJ]H_WR$p>mbVAhX[=?1f35,f&oj(kN@]R7ceqNmJb[JbE30R_n=A,pL8:@r_@\](1)rUO@[U[oED"O(L`6eatqV>Z9\F<fNf<'I^9*gtSp#oH*doiI#-5OXtVae].\a@&27Xn8h$irAD^N0<kQ/p^!SP]DjM\bNgQ^k%lMb;*cQ^#ro?nB34X4`\CKksf2@0*^IO>E"s/p3DM@026?0jEfI3m_`6`R8-9.0`+N]G5^83eLucN^g'H%0bO%=ao=o0^=%c[bmI/ON3%h1Gq+g8c4G$C2J^X>R"4\n\YMgrBX*1boN4e^Yu\O^4KWs6C^Vi4/OLrA-X!i.UV=gAdTEs%DupC@G_H+;@!;KLAgIK/>Tk'W3WrQi/F!?Ch($OiOhAdhmqMa3o/af/1fT5@O]4UD+j?Q;Npp(ihguBiRs_o<Ct!l11=hDh?q=a"R7o,iGI+/o%oMJU=,$Y&(f1U'D:kG'DD%SW$A^]dRJ#*)gue]7d=`-B/ur<qJV3J*R"<aFL5fnE&ss4`Y$'mll-MaC%hPn8jBGiMV&B:9W>`?*)4_f'K<MeQKLIVpI&ZN".Zs/>MZ2abnOnGBCZ7I$s\0!$[0*6C.3$59uJ\jS;$RB([#A#L^mTn1W,aR;GQZXCNFgUS0%Q+V0\WN<YEPK(Te:X''8NlLiu;T"':9^Lf1q/3di^f=8r>*qD0#~>endstream
+<< /Type /Page /Parent 15 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 5 0 R >>
+endobj
+12 0 obj
+<< /Type /Page /Parent 15 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 6 0 R >>
+endobj
+13 0 obj
+<< /Type /Page /Parent 15 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 7 0 R >>
+endobj
+14 0 obj
+<< /Type /Page /Parent 15 0 R /MediaBox [ 0 0 841.8898 595.2756 ] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Contents 8 0 R >>
+endobj
+15 0 obj
+<< /Type /Pages /Count 6 /Kids [ 9 0 R 10 0 R 11 0 R 12 0 R 13 0 R 14 0 R ] >>
+endobj
+16 0 obj
+<< /Type /Catalog /Pages 15 0 R /PageMode /UseNone >>
+endobj
+17 0 obj
+<< /Title (Go-Live Initialization) /Author (OpenAI Codex) /Producer (Python standard library) /CreationDate (D:20260308195244-04'00') /ModDate (D:20260308195244-04'00') >>
 endobj
 xref
-0 12
+0 18
 0000000000 65535 f 
-0000000061 00000 n 
-0000000112 00000 n 
-0000000219 00000 n 
-0000000331 00000 n 
-0000000436 00000 n 
-0000000640 00000 n 
-0000000844 00000 n 
-0000000912 00000 n 
-0000001200 00000 n 
-0000001265 00000 n 
-0000003826 00000 n 
+0000000015 00000 n 
+0000000083 00000 n 
+0000000156 00000 n 
+0000003872 00000 n 
+0000007829 00000 n 
+0000010416 00000 n 
+0000013264 00000 n 
+0000015681 00000 n 
+0000018173 00000 n 
+0000018322 00000 n 
+0000018472 00000 n 
+0000018622 00000 n 
+0000018772 00000 n 
+0000018922 00000 n 
+0000019072 00000 n 
+0000019167 00000 n 
+0000019237 00000 n 
 trailer
-<<
-/ID 
-[<b5f6214b96d4777ec6073524fb408a8d><b5f6214b96d4777ec6073524fb408a8d>]
-% ReportLab generated PDF document -- digest (opensource)
-
-/Info 8 0 R
-/Root 7 0 R
-/Size 12
->>
+<< /Size 18 /Root 16 0 R /Info 17 0 R >>
 startxref
-5784
+19425
 %%EOF

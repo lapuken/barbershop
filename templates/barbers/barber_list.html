@@ -7,7 +7,9 @@
         <h1>Barbers</h1>
         <p class="text-muted mb-0">Commission-managed barber directory per branch.</p>
     </div>
+    {% if can_manage_barbers %}
     <a class="btn btn-primary" href="{% url 'barbers:create' %}">New Barber</a>
+    {% endif %}
 </div>
 <div class="section-card">
     <div class="card-body border-bottom">
@@ -47,6 +49,7 @@
                         </span>
                     </td>
                     <td class="text-end">
+                        {% if can_manage_barbers %}
                         <div class="action-stack">
                             <a class="btn btn-sm btn-outline-primary" href="{% url 'barbers:edit' barber.pk %}">Edit</a>
                             <form method="post" action="{% url 'barbers:delete' barber.pk %}" class="d-inline">
@@ -54,6 +57,7 @@
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Archive</button>
                             </form>
                         </div>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}

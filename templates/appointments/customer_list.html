@@ -8,7 +8,9 @@
         <h1>Customers</h1>
         <p class="text-muted mb-0">Track repeat clients, contact details, and booking-ready customer records.</p>
     </div>
+    {% if can_edit_customers %}
     <a class="btn btn-primary" href="{% url 'appointments:customer-create' %}">New Customer</a>
+    {% endif %}
 </div>
 <div class="section-card">
     <div class="card-body border-bottom">
@@ -58,7 +60,9 @@
                     </td>
                     <td class="text-end">
                         <div class="action-stack">
+                            {% if can_edit_customers %}
                             <a class="btn btn-sm btn-outline-primary" href="{% url 'appointments:customer-edit' customer.pk %}">Edit</a>
+                            {% endif %}
                             {% with share=customer_share_links|get_item:customer.id %}
                             {% if share.whatsapp %}
                             <a class="btn btn-sm btn-outline-success" href="{{ share.whatsapp }}" target="_blank" rel="noreferrer">WhatsApp</a>
@@ -67,10 +71,12 @@
                             <a class="btn btn-sm btn-outline-secondary" href="{{ share.telegram }}" target="_blank" rel="noreferrer">Telegram</a>
                             {% endif %}
                             {% endwith %}
+                            {% if can_archive_customers %}
                             <form method="post" action="{% url 'appointments:customer-delete' customer.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Archive</button>
                             </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

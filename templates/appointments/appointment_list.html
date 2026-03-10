@@ -10,7 +10,9 @@
     </div>
     <div class="d-flex flex-wrap gap-2">
         <a class="btn btn-outline-primary" href="{% url 'appointments:public-book' %}">Public Booking Page</a>
+        {% if can_edit_appointments %}
         <a class="btn btn-primary" href="{% url 'appointments:create' %}">New Appointment</a>
+        {% endif %}
     </div>
 </div>
 <div class="section-card">
@@ -61,7 +63,9 @@
                     <td><span class="status-pill {{ appointment.status }}">{{ appointment.get_status_display }}</span></td>
                     <td class="text-end">
                         <div class="action-stack">
+                            {% if can_edit_appointments %}
                             <a class="btn btn-sm btn-outline-primary" href="{% url 'appointments:edit' appointment.pk %}">Edit</a>
+                            {% endif %}
                             {% with share=appointment_share_links|get_item:appointment.id %}
                             {% if share.whatsapp %}
                             <a class="btn btn-sm btn-outline-success" href="{{ share.whatsapp }}" target="_blank" rel="noreferrer">WhatsApp</a>
@@ -70,10 +74,12 @@
                             <a class="btn btn-sm btn-outline-secondary" href="{{ share.telegram }}" target="_blank" rel="noreferrer">Telegram</a>
                             {% endif %}
                             {% endwith %}
+                            {% if can_archive_appointments %}
                             <form method="post" action="{% url 'appointments:delete' appointment.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Archive</button>
                             </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

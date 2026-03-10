@@ -17,16 +17,18 @@
             <div class="sidebar-kicker mt-4">Workspace</div>
             <nav class="nav flex-column gap-2 mt-2">
                 <a class="nav-link {% if namespace == 'core' and url_name == 'dashboard' %}active{% endif %}" href="{% url 'core:dashboard' %}">Dashboard</a>
-                {% if user.role == "platform_admin" %}
+                {% if can_manage_shops %}
                 <a class="nav-link {% if namespace == 'shops' %}active{% endif %}" href="{% url 'shops:list' %}">Shops</a>
                 {% endif %}
                 <a class="nav-link {% if namespace == 'accounts' and url_name == 'shop_selector' %}active{% endif %}" href="{% url 'accounts:shop_selector' %}">Shop Selector</a>
+                {% if can_access_shop_scoped_nav %}
                 <a class="nav-link {% if namespace == 'appointments' and 'customer' in url_name %}active{% endif %}" href="{% url 'appointments:customers' %}">Customers</a>
                 <a class="nav-link {% if namespace == 'appointments' and 'customer' not in url_name %}active{% endif %}" href="{% url 'appointments:list' %}">Appointments</a>
                 <a class="nav-link {% if namespace == 'barbers' %}active{% endif %}" href="{% url 'barbers:list' %}">Barbers</a>
                 <a class="nav-link {% if namespace == 'products' %}active{% endif %}" href="{% url 'products:list' %}">Products</a>
                 <a class="nav-link {% if namespace == 'sales' %}active{% endif %}" href="{% url 'sales:list' %}">Sales</a>
                 <a class="nav-link {% if namespace == 'expenses' %}active{% endif %}" href="{% url 'expenses:list' %}">Expenses</a>
+                {% endif %}
                 <a class="nav-link {% if namespace == 'reports' %}active{% endif %}" href="{% url 'reports:dashboard' %}">Reports</a>
                 <a class="nav-link {% if namespace == 'audit' %}active{% endif %}" href="{% url 'audit:list' %}">Audit</a>
                 <a class="nav-link {% if namespace == 'core' and url_name == 'settings' %}active{% endif %}" href="{% url 'core:settings' %}">Settings</a>

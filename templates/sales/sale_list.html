@@ -7,7 +7,9 @@
         <h1>Daily Sales</h1>
         <p class="text-muted mb-0">One sale record per barber, shop, and date with immutable item snapshots.</p>
     </div>
+    {% if can_edit_sales %}
     <a class="btn btn-primary" href="{% url 'sales:create' %}">New Sale</a>
+    {% endif %}
 </div>
 <div class="section-card">
     <div class="card-body border-bottom">
@@ -45,11 +47,15 @@
                     <td>{{ sale.commission_amount|floatformat:2 }}</td>
                     <td class="text-end">
                         <div class="action-stack">
+                            {% if can_edit_sales %}
                             <a class="btn btn-sm btn-outline-primary" href="{% url 'sales:edit' sale.pk %}">Edit</a>
+                            {% endif %}
+                            {% if can_archive_sales %}
                             <form method="post" action="{% url 'sales:delete' sale.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Archive</button>
                             </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

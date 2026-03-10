@@ -7,7 +7,9 @@
         <h1>Expenses</h1>
         <p class="text-muted mb-0">Capture branch operating costs and reflected net revenue impact.</p>
     </div>
+    {% if can_edit_expenses %}
     <a class="btn btn-primary" href="{% url 'expenses:create' %}">New Expense</a>
+    {% endif %}
 </div>
 <div class="section-card">
     <div class="card-body border-bottom">
@@ -38,11 +40,15 @@
                     <td>{{ expense.amount|floatformat:2 }}</td>
                     <td class="text-end">
                         <div class="action-stack">
+                            {% if can_edit_expenses %}
                             <a class="btn btn-sm btn-outline-primary" href="{% url 'expenses:edit' expense.pk %}">Edit</a>
+                            {% endif %}
+                            {% if can_archive_expenses %}
                             <form method="post" action="{% url 'expenses:delete' expense.pk %}" class="d-inline">
                                 {% csrf_token %}
                                 <button class="btn btn-sm btn-outline-danger" type="submit">Reverse</button>
                             </form>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>

@@ -13,6 +13,7 @@
                 <p>Role: <strong>{{ request.user.get_role_display }}</strong></p>
                 <p>Current shop: <strong>{{ current_shop.name|default:"None selected" }}</strong></p>
                 <a class="btn btn-outline-primary" href="{% url 'accounts:shop_selector' %}">Switch Shop</a>
+                <a class="btn btn-outline-secondary" href="{% url 'accounts:password_change' %}">Change Password</a>
             </div>
         </div>
     </div>

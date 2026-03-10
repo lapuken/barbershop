@@ -232,6 +232,67 @@ class AuthAndAuthorizationTests(BaseAppTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertIn("_auth_user_id", self.web_client.session)
 
+    def test_login_redirects_to_password_change_when_required(self):
+        self.manager.must_change_password = True
+        self.manager.save(update_fields=["must_change_password"])
+
+        response = self.web_client.post(
+            f"{reverse('accounts:login')}?next={reverse('reports:dashboard')}",
+            {"username": "manager", "password": "StrongPass12345!"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            f"{reverse('accounts:password_change')}?next={reverse('reports:dashboard')}",
+        )
+
+    def test_locked_user_is_redirected_until_password_changes(self):
+        self.manager.must_change_password = True
+        self.manager.save(update_fields=["must_change_password"])
+        self.login_session(self.manager)
+
+        response = self.web_client.get(reverse("core:dashboard"))
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(
+            response.url,
+            f"{reverse('accounts:password_change')}?next={reverse('core:dashboard')}",
+        )
+
+    def test_password_change_clears_flag_and_redirects_to_original_target(self):
+        self.manager.must_change_password = True
+        self.manager.save(update_fields=["must_change_password"])
+        self.login_session(self.manager)
+
+        response = self.web_client.post(
+            reverse("accounts:password_change"),
+            {
+                "old_password": "StrongPass12345!",
+                "new_password1": "NewStrongPass12345!",
+                "new_password2": "NewStrongPass12345!",
+                "next": reverse("reports:dashboard"),
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("reports:dashboard"))
+        self.assertIn("_auth_user_id", self.web_client.session)
+
+        self.manager.refresh_from_db()
+        self.assertFalse(self.manager.must_change_password)
+        self.assertTrue(self.manager.check_password("NewStrongPass12345!"))
+
+    def test_locked_user_api_requests_are_blocked(self):
+        self.manager.must_change_password = True
+        self.manager.save(update_fields=["must_change_password"])
+        self.login_api(self.manager)
+
+        response = self.api_client.get("/api/reports/dashboard")
+
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.json(), {"detail": "Password change required."})
+
     def test_invalid_login_rejected(self):
         response = self.web_client.post(
             reverse("accounts:login"),
@@ -258,6 +319,48 @@ class AuthAndAuthorizationTests(BaseAppTestCase):
         self.login_api(self.cashier)
         response = self.api_client.delete(f"/api/expenses/{expense.id}/")
         self.assertEqual(response.status_code, 403)
+
+    def test_cashier_without_active_shop_hides_shop_scoped_navigation(self):
+        self.web_client.force_login(self.cashier)
+
+        response = self.web_client.get(reverse("core:dashboard"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("accounts:shop_selector"))
+        self.assertContains(response, reverse("reports:dashboard"))
+        self.assertContains(response, reverse("audit:list"))
+        self.assertNotContains(response, reverse("appointments:customers"))
+        self.assertNotContains(response, reverse("appointments:list"))
+        self.assertNotContains(response, reverse("barbers:list"))
+        self.assertNotContains(response, reverse("products:list"))
+        self.assertNotContains(response, reverse("sales:list"))
+        self.assertNotContains(response, reverse("expenses:list"))
+        self.assertNotContains(response, reverse("appointments:create"))
+        self.assertNotContains(response, reverse("sales:create"))
+
+    def test_cashier_sees_only_allowed_page_actions(self):
+        self.login_session(self.cashier)
+
+        customer_response = self.web_client.get(reverse("appointments:customers"))
+        self.assertEqual(customer_response.status_code, 200)
+        self.assertContains(customer_response, reverse("appointments:customer-create"))
+        self.assertContains(
+            customer_response,
+            reverse("appointments:customer-edit", args=[self.customer.pk]),
+        )
+        self.assertNotContains(
+            customer_response,
+            reverse("appointments:customer-delete", args=[self.customer.pk]),
+        )
+
+        barber_response = self.web_client.get(reverse("barbers:list"))
+        self.assertEqual(barber_response.status_code, 200)
+        self.assertNotContains(barber_response, reverse("barbers:create"))
+        self.assertNotContains(barber_response, reverse("barbers:edit", args=[self.barber.pk]))
+        self.assertNotContains(
+            barber_response,
+            reverse("barbers:delete", args=[self.barber.pk]),
+        )
 
 
 class BarberTests(BaseAppTestCase):
@@ -768,7 +871,9 @@ class GoLiveInitializationCommandTests(TestCase):
         self.assertTrue(admin.is_superuser)
         self.assertTrue(admin.check_password("StrongPass12345!"))
         self.assertEqual(owner.role, Roles.SHOP_OWNER)
-        self.assertTrue(UserShopAccess.objects.filter(user=owner, shop=shop, is_active=True).exists())
+        self.assertTrue(
+            UserShopAccess.objects.filter(user=owner, shop=shop, is_active=True).exists()
+        )
         self.assertTrue(
             Barber.objects.filter(shop=shop, employee_code="BR-001", is_active=True).exists()
         )
