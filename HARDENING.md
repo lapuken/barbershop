@@ -90,6 +90,21 @@ cd /opt/smartbarber/app
 ./deploy.sh
 ```
 
+For GitHub-driven production deploys, use GitHub environment-scoped storage instead of repository-wide secrets:
+
+- environment: `production`
+- variables: `PRODUCTION_DEPLOY_HOST`, `PRODUCTION_DEPLOY_PORT`, `PRODUCTION_DEPLOY_USER`
+- secrets: `PRODUCTION_DEPLOY_SSH_KEY`, `PRODUCTION_DEPLOY_KNOWN_HOSTS`
+
+Use a dedicated SSH key for GitHub Actions only. Do not reuse a personal operator key.
+
+When rotating the GitHub deploy key:
+
+1. Generate a new SSH key pair.
+2. Replace the old public key in `~barberadmin/.ssh/authorized_keys`.
+3. Replace `PRODUCTION_DEPLOY_SSH_KEY` in the GitHub `production` environment.
+4. Re-check `PRODUCTION_DEPLOY_KNOWN_HOSTS` if the server host key changed.
+
 ## Backups and Hygiene
 
 Create and verify backups regularly:
@@ -131,6 +146,13 @@ Refresh app containers after code or base image updates:
 cd /opt/smartbarber/app
 ./deploy.sh --git-pull
 ```
+
+For the GitHub Actions path, protect production deploys by:
+
+- limiting automatic deploys to `main`
+- requiring `CI` to pass before merge
+- optionally requiring reviewers on the GitHub `production` environment
+- keeping the server checkout on a clean `main` branch so automation cannot deploy from an unexpected ref
 
 Check TLS renewal:
 

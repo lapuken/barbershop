@@ -1,0 +1,84 @@
+name: Deploy Production
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: >-
+      (github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch == 'main') ||
+      (github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      DEPLOY_HOST: ${{ vars.PRODUCTION_DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ vars.PRODUCTION_DEPLOY_PORT }}
+      DEPLOY_USER: ${{ vars.PRODUCTION_DEPLOY_USER }}
+    steps:
+      - name: Resolve deploy ref
+        shell: bash
+        run: |
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_run" ]]; then
+            echo "DEPLOY_SHA=${{ github.event.workflow_run.head_sha }}" >> "${GITHUB_ENV}"
+          else
+            echo "DEPLOY_SHA=${GITHUB_SHA}" >> "${GITHUB_ENV}"
+          fi
+          echo "DEPLOY_BRANCH=main" >> "${GITHUB_ENV}"
+
+      - name: Validate deploy configuration
+        shell: bash
+        run: |
+          test -n "${DEPLOY_HOST}"
+          test -n "${DEPLOY_PORT}"
+          test -n "${DEPLOY_USER}"
+          test -n "${{ secrets.PRODUCTION_DEPLOY_SSH_KEY }}"
+          test -n "${{ secrets.PRODUCTION_DEPLOY_KNOWN_HOSTS }}"
+
+      - name: Configure SSH
+        shell: bash
+        run: |
+          install -d -m 700 "${HOME}/.ssh"
+          printf '%s\n' "${{ secrets.PRODUCTION_DEPLOY_SSH_KEY }}" > "${HOME}/.ssh/id_ed25519"
+          chmod 600 "${HOME}/.ssh/id_ed25519"
+          printf '%s\n' "${{ secrets.PRODUCTION_DEPLOY_KNOWN_HOSTS }}" > "${HOME}/.ssh/known_hosts"
+          chmod 644 "${HOME}/.ssh/known_hosts"
+
+      - name: Deploy on production host
+        shell: bash
+        run: |
+          ssh \
+            -i "${HOME}/.ssh/id_ed25519" \
+            -o BatchMode=yes \
+            -o StrictHostKeyChecking=yes \
+            -p "${DEPLOY_PORT}" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "cd /opt/smartbarber/app && ./scripts/github-deploy.sh ${DEPLOY_BRANCH} ${DEPLOY_SHA}"
+
+      - name: Write deploy summary
+        shell: bash
+        run: |
+          {
+            echo "## Production Deploy"
+            echo
+            echo "- Branch: ${DEPLOY_BRANCH}"
+            echo "- Commit: ${DEPLOY_SHA}"
+            echo "- Host: ${DEPLOY_HOST}"
+          } >> "${GITHUB_STEP_SUMMARY}"

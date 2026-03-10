@@ -10,7 +10,15 @@
 
 ## Daily Commands
 
-Deploy latest code:
+Promote reviewed code to `main`:
+
+```bash
+git push origin main
+```
+
+Or merge a reviewed pull request into `main`, then watch the `CI` and `Deploy Production` workflows in GitHub Actions.
+
+Manual fallback deploy from the VPS:
 
 ```bash
 cd /opt/smartbarber/app
@@ -43,6 +51,13 @@ Collect diagnostics:
 ```bash
 cd /opt/smartbarber/app
 ./scripts/diagnostics.sh --tail 150
+```
+
+Check the last successful release marker:
+
+```bash
+cd /opt/smartbarber/app
+cat /opt/smartbarber/logs/releases/latest-successful-release.env
 ```
 
 Initialize or update go-live baseline data:
@@ -199,6 +214,16 @@ Certbot renewal problems:
 sudo certbot renew --dry-run
 sudo journalctl -u certbot --no-pager -n 100
 sudo nginx -t
+```
+
+GitHub deploy failure:
+
+```bash
+cd /opt/smartbarber/app
+git status --short
+git branch --show-current
+git log --oneline -5
+./scripts/diagnostics.sh --tail 200
 ```
 
 Port conflicts:

@@ -90,6 +90,83 @@ cd /opt/smartbarber/app
 docker compose --env-file /opt/smartbarber/env/.env ps
 ```
 
+## GitHub Actions Production Deploy
+
+After the first manual deploy is working, GitHub can drive future production deploys for `main`.
+
+The checked-in workflow does this:
+
+- waits for the `CI` workflow to succeed on a `main` push
+- SSHes to the VPS from GitHub Actions
+- fast-forwards the server checkout to the tested `main` commit
+- runs `./deploy.sh --skip-git-pull` on the VPS
+
+That keeps migrations explicit in the reviewed deployment script instead of moving them into container startup.
+
+### 1. Create a dedicated GitHub Actions SSH key
+
+Run this on your workstation:
+
+```bash
+ssh-keygen -t ed25519 -C "smartbarber-github-actions" -f ./smartbarber-github-actions
+```
+
+Install the public key for the production operator account:
+
+```bash
+ssh barberadmin@66.42.115.59
+install -d -m 700 ~/.ssh
+cat >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+```
+
+Paste the contents of `smartbarber-github-actions.pub`, then press `Ctrl-D`.
+
+### 2. Capture the production host key
+
+Run this on your workstation and save the output exactly as shown:
+
+```bash
+ssh-keyscan -H 66.42.115.59
+```
+
+### 3. Configure the GitHub `production` environment
+
+In GitHub, create an environment named `production` and store the deploy settings there instead of committing them to the repository.
+
+Environment variables:
+
+- `PRODUCTION_DEPLOY_HOST=66.42.115.59`
+- `PRODUCTION_DEPLOY_PORT=22`
+- `PRODUCTION_DEPLOY_USER=barberadmin`
+
+Environment secrets:
+
+- `PRODUCTION_DEPLOY_SSH_KEY`: contents of `smartbarber-github-actions`
+- `PRODUCTION_DEPLOY_KNOWN_HOSTS`: output of `ssh-keyscan -H 66.42.115.59`
+
+Recommended protection:
+
+- require `main` branch protections before merge
+- require `CI` to pass before merge
+- add required reviewers to the `production` environment if you want an approval gate before each production deploy
+
+### 4. Verify the server checkout
+
+The production host must stay on the `main` branch because the GitHub deploy script refuses to switch branches during automation.
+
+```bash
+ssh barberadmin@66.42.115.59
+cd /opt/smartbarber/app
+git branch --show-current
+git status --short
+```
+
+Expected result:
+
+- branch is `main`
+- worktree is clean
+
 ## Nginx and TLS
 
 Install the bootstrap site first:
@@ -163,6 +240,15 @@ sudo nginx -t
 ```
 
 ## Repeat Deploy
+
+GitHub-driven production deploy:
+
+1. Merge reviewed changes into `main`.
+2. Wait for the `CI` workflow to pass on `main`.
+3. Wait for the `Deploy Production` workflow to finish.
+4. Run the validation commands below if you want an extra operator-side check.
+
+Manual fallback from the server:
 
 ```bash
 cd /opt/smartbarber/app
