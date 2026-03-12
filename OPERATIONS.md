@@ -10,13 +10,7 @@
 
 ## Daily Commands
 
-Promote reviewed code to `main`:
-
-```bash
-git push origin main
-```
-
-Or merge a reviewed pull request into `main`, then watch the `CI` and `Deploy Production` workflows in GitHub Actions.
+Promote reviewed code by merging a reviewed pull request into `main`, then watch the `CI` and `Deploy Production` workflows in GitHub Actions.
 
 Manual fallback deploy from the VPS:
 
