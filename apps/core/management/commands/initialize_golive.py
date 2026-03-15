@@ -190,9 +190,7 @@ class Command(BaseCommand):
         barber.full_name = self._required_string(barber_data, "full_name")
         barber.employee_code = self._string(barber_data, "employee_code", "")
         barber.phone = self._string(barber_data, "phone", "")
-        barber.commission_rate = self._decimal(
-            barber_data, "commission_rate", Decimal("50.00")
-        )
+        barber.commission_rate = self._decimal(barber_data, "commission_rate", Decimal("50.00"))
         barber.is_active = self._bool(barber_data, "is_active", True)
         barber.deleted_at = None
         barber.deleted_by = None
@@ -259,7 +257,9 @@ class Command(BaseCommand):
         role = self._required_string(data, "role")
         valid_roles = {value for value, _label in Roles.CHOICES}
         if role not in valid_roles:
-            raise CommandError(f"Invalid role '{role}'. Expected one of: {', '.join(sorted(valid_roles))}.")
+            raise CommandError(
+                f"Invalid role '{role}'. Expected one of: {', '.join(sorted(valid_roles))}."
+            )
         if allow_platform_admin and role != Roles.PLATFORM_ADMIN:
             raise CommandError("The 'platform_admin' entry must use the 'platform_admin' role.")
         if role == Roles.PLATFORM_ADMIN and not allow_platform_admin:
