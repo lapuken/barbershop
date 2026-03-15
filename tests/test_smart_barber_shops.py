@@ -462,6 +462,16 @@ class ProductTests(BaseAppTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
+    def test_sale_item_quantity_must_be_positive(self):
+        self.login_api(self.manager)
+        payload = self.sale_payload()
+        payload["items"][0]["quantity"] = 0
+
+        response = self.api_client.post("/api/sales/", payload, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("quantity", response.json()["items"][0])
+
 
 class MessagingAndAvailabilityTests(BaseAppTestCase):
     def test_whatsapp_and_telegram_helpers_create_links(self):

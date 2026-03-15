@@ -9,6 +9,9 @@ class SaleItemSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         product = attrs.get("product")
         item_type = attrs.get("item_type")
+        quantity = attrs.get("quantity")
+        if quantity is not None and quantity < 1:
+            raise serializers.ValidationError({"quantity": "Quantity must be at least 1."})
         if item_type == SaleItem.PRODUCT:
             if not product:
                 raise serializers.ValidationError(
@@ -106,7 +109,10 @@ class SaleSerializer(serializers.ModelSerializer):
         items = validated_data.pop("items", [])
         user = self.context["request"].user
         sale = Sale(**validated_data, created_by=user, updated_by=user)
-        save_sale_with_items(sale=sale, items_data=items, user=user)
+        try:
+            save_sale_with_items(sale=sale, items_data=items, user=user)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.message_dict or exc.messages)
         return sale
 
     def update(self, instance, validated_data):
@@ -125,5 +131,8 @@ class SaleSerializer(serializers.ModelSerializer):
                 }
                 for item in instance.items.all()
             ]
-        save_sale_with_items(sale=instance, items_data=items, user=user)
+        try:
+            save_sale_with_items(sale=instance, items_data=items, user=user)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(exc.message_dict or exc.messages)
         return instance
