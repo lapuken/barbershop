@@ -1,4 +1,5 @@
-from .test import *
+from .test import *  # noqa: F403
+from .test import BASE_DIR
 
 DATABASES = {
     "default": {

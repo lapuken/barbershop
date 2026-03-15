@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# ruff: noqa: E402
 from __future__ import annotations
 
 import argparse
@@ -24,7 +25,6 @@ import django
 
 django.setup()
 
-from django import forms
 from django.test import override_settings
 from django.test.runner import DiscoverRunner
 from django.urls import reverse
@@ -56,9 +56,7 @@ from apps.appointments.sharing import (
 )
 from apps.audit.models import AuditLog
 from apps.barbers.models import Barber
-from apps.core.constants import Roles
 from apps.core.services import (
-    authenticate_and_login,
     get_accessible_shops,
     get_shop_queryset_for_user,
     user_can_access_shop,
@@ -80,7 +78,6 @@ from apps.reports.services import (
     weekly_sales_summary,
 )
 from apps.sales.models import Sale
-from apps.sales.serializers import SaleSerializer
 from apps.sales.services import save_sale_with_items
 from scripts.simple_pdf import PDFBuilder, char_capacity, line_command, stream_object, text_command
 from tests.test_smart_barber_shops import BaseAppTestCase
@@ -244,7 +241,9 @@ class MatrixCase(BaseAppTestCase):
             ),
         )
 
-    def ensure_customer(self, shop_key: str, *, active: bool = True, suffix: str = "cust") -> Customer:
+    def ensure_customer(
+        self, shop_key: str, *, active: bool = True, suffix: str = "cust"
+    ) -> Customer:
         if shop_key == "shop1" and active and suffix == "cust":
             return self.customer
         cache_key = ("customer", shop_key, active, suffix)
@@ -265,7 +264,9 @@ class MatrixCase(BaseAppTestCase):
 
         return self.cached_fixture(cache_key, factory)
 
-    def ensure_barber(self, shop_key: str, *, active: bool = True, suffix: str = "barber") -> Barber:
+    def ensure_barber(
+        self, shop_key: str, *, active: bool = True, suffix: str = "barber"
+    ) -> Barber:
         if active:
             if shop_key == "shop1" and suffix == "barber":
                 return self.barber
@@ -289,7 +290,9 @@ class MatrixCase(BaseAppTestCase):
 
         return self.cached_fixture(cache_key, factory)
 
-    def ensure_product(self, shop_key: str, *, active: bool = True, suffix: str = "product") -> Product:
+    def ensure_product(
+        self, shop_key: str, *, active: bool = True, suffix: str = "product"
+    ) -> Product:
         if active:
             if shop_key == "shop1" and suffix == "product":
                 return self.product
@@ -370,7 +373,8 @@ class MatrixCase(BaseAppTestCase):
         sale = Sale(
             shop=shop,
             barber=barber,
-            sale_date=sale_date or (timezone.localdate() - timedelta(days=Sale.objects.count() + 1)),
+            sale_date=sale_date
+            or (timezone.localdate() - timedelta(days=Sale.objects.count() + 1)),
             notes=notes,
             created_by=self.user_for_shop_key(shop_key),
             updated_by=self.user_for_shop_key(shop_key),
@@ -398,7 +402,9 @@ class MatrixCase(BaseAppTestCase):
         save_sale_with_items(sale=sale, items_data=items, user=self.user_for_shop_key(shop_key))
         return sale
 
-    def ensure_expense(self, shop_key: str, *, amount: str = "20.00", category: str = "Supplies") -> Expense:
+    def ensure_expense(
+        self, shop_key: str, *, amount: str = "20.00", category: str = "Supplies"
+    ) -> Expense:
         shop = self.shop_for_key(shop_key)
         return Expense.objects.create(
             shop=shop,
@@ -673,7 +679,9 @@ def api_read_runner(resource: str, user_key: str, action: str):
                     f"GET {config['list_url']} returned 200 with {len(results)} visible {category_title} records."
                 )
             else:
-                self.set_scenario_detail(f"GET {config['list_url']} returned 403 for {USER_LABELS[user_key]}.")
+                self.set_scenario_detail(
+                    f"GET {config['list_url']} returned 403 for {USER_LABELS[user_key]}."
+                )
             return
 
         scope = "own" if action == "detail_own" else "other"
@@ -684,7 +692,11 @@ def api_read_runner(resource: str, user_key: str, action: str):
             expected_status = 403
         elif user_key == "platform_admin":
             expected_status = 200
-        elif scope == "own" or resource == "shops" and user_can_access_shop(self.actor(user_key), obj):
+        elif (
+            scope == "own"
+            or resource == "shops"
+            and user_can_access_shop(self.actor(user_key), obj)
+        ):
             expected_status = 200
         else:
             expected_status = 404
@@ -708,7 +720,9 @@ def report_endpoint_runner(path: str, user_key: str):
     return runner
 
 
-def build_resource_payload(self: MatrixCase, resource: str, shop_key: str, *, variant: str = "default"):
+def build_resource_payload(
+    self: MatrixCase, resource: str, shop_key: str, *, variant: str = "default"
+):
     shop = self.shop_for_key(shop_key)
     token = self.unique_token(resource)
     if resource == "barbers":
@@ -747,9 +761,7 @@ def build_resource_payload(self: MatrixCase, resource: str, shop_key: str, *, va
             "customer": customer.id,
             "barber": barber.id,
             "service_name": "Haircut",
-            "scheduled_start": (
-                timezone.now() + timedelta(days=Appointment.objects.count() + 1)
-            )
+            "scheduled_start": (timezone.now() + timedelta(days=Appointment.objects.count() + 1))
             .replace(second=0, microsecond=0)
             .isoformat(),
             "duration_minutes": 45,
@@ -841,7 +853,9 @@ def api_mutation_runner(resource: str, user_key: str, action: str, scope: str):
 
         if resource == "shops":
             if action == "create":
-                payload = build_resource_payload(self, "shops", "shop1" if scope == "own" else "shop2")
+                payload = build_resource_payload(
+                    self, "shops", "shop1" if scope == "own" else "shop2"
+                )
                 response = self.api_client.post("/api/shops/", payload, format="json")
             else:
                 target = self.shop_for_key("shop1" if scope == "own" else "shop2")
@@ -886,7 +900,9 @@ def api_mutation_runner(resource: str, user_key: str, action: str, scope: str):
         if expected_status == 204:
             stored_target = target.__class__.all_objects.get(pk=target.pk)
             self.assertIsNotNone(stored_target.deleted_at)
-        self.set_scenario_detail(f"DELETE {url} returned {expected_status} for {USER_LABELS[user_key]}.")
+        self.set_scenario_detail(
+            f"DELETE {url} returned {expected_status} for {USER_LABELS[user_key]}."
+        )
 
     return runner
 
@@ -899,7 +915,9 @@ def web_list_runner(page_name: str, user_key: str, expected_status: int):
         url = page_lookup[page_name]()
         response = self.web_client.get(url)
         self.assertEqual(response.status_code, expected_status)
-        self.set_scenario_detail(f"GET {url} returned {expected_status} for {USER_LABELS[user_key]}.")
+        self.set_scenario_detail(
+            f"GET {url} returned {expected_status} for {USER_LABELS[user_key]}."
+        )
 
     return runner
 
@@ -912,7 +930,9 @@ def web_create_runner(page_name: str, user_key: str, expected_status: int):
         url = page_lookup[page_name]()
         response = self.web_client.get(url)
         self.assertEqual(response.status_code, expected_status)
-        self.set_scenario_detail(f"GET {url} returned {expected_status} for {USER_LABELS[user_key]}.")
+        self.set_scenario_detail(
+            f"GET {url} returned {expected_status} for {USER_LABELS[user_key]}."
+        )
 
     return runner
 
@@ -974,7 +994,9 @@ def web_edit_runner(resource: str, user_key: str, scope: str):
             else:
                 expected_status = 404
         self.assertEqual(response.status_code, expected_status)
-        self.set_scenario_detail(f"GET {url} returned {expected_status} for {USER_LABELS[user_key]}.")
+        self.set_scenario_detail(
+            f"GET {url} returned {expected_status} for {USER_LABELS[user_key]}."
+        )
 
     return runner
 
@@ -996,7 +1018,9 @@ def web_delete_runner(resource: str, user_key: str, scope: str):
             self.assertIsNotNone(stored_target.deleted_at)
         else:
             self.assertIsNone(stored_target.deleted_at)
-        self.set_scenario_detail(f"POST {url} returned {expected_status} for {USER_LABELS[user_key]}.")
+        self.set_scenario_detail(
+            f"POST {url} returned {expected_status} for {USER_LABELS[user_key]}."
+        )
 
     return runner
 
@@ -1004,17 +1028,23 @@ def web_delete_runner(resource: str, user_key: str, scope: str):
 def public_page_runner(kind: str):
     def runner(self: WebMatrixCase) -> None:
         def public_start(days: int) -> str:
-            return timezone.localtime(timezone.now() + timedelta(days=days)).replace(
-                second=0,
-                microsecond=0,
-            ).strftime("%Y-%m-%dT%H:%M")
+            return (
+                timezone.localtime(timezone.now() + timedelta(days=days))
+                .replace(
+                    second=0,
+                    microsecond=0,
+                )
+                .strftime("%Y-%m-%dT%H:%M")
+            )
 
         if kind == "book-default":
             response = self.web_client.get(reverse("appointments:public-book"))
             self.assertEqual(response.status_code, 200)
             self.set_scenario_detail("Public booking page rendered without a shop parameter.")
         elif kind == "book-shop":
-            response = self.web_client.get(f"{reverse('appointments:public-book')}?shop={self.shop1.id}")
+            response = self.web_client.get(
+                f"{reverse('appointments:public-book')}?shop={self.shop1.id}"
+            )
             self.assertEqual(response.status_code, 200)
             self.set_scenario_detail("Public booking page rendered for shop1.")
         elif kind == "book-invalid":
@@ -1036,7 +1066,9 @@ def public_page_runner(kind: str):
                 f"{reverse('appointments:public-availability')}?shop=999999"
             )
             self.assertEqual(response.status_code, 200)
-            self.set_scenario_detail("Public availability page tolerated an invalid shop parameter.")
+            self.set_scenario_detail(
+                "Public availability page tolerated an invalid shop parameter."
+            )
         elif kind == "success":
             response = self.web_client.get(reverse("appointments:public-success"))
             self.assertEqual(response.status_code, 200)
@@ -1056,7 +1088,9 @@ def public_page_runner(kind: str):
             )
             self.assertEqual(response.status_code, 302)
             self.assertTrue(Appointment.objects.filter(customer__phone="555-8811").exists())
-            self.set_scenario_detail("Public booking form created a phone-based appointment request.")
+            self.set_scenario_detail(
+                "Public booking form created a phone-based appointment request."
+            )
         elif kind == "post-telegram":
             response = self.web_client.post(
                 reverse("appointments:public-book"),
@@ -1071,8 +1105,12 @@ def public_page_runner(kind: str):
                 },
             )
             self.assertEqual(response.status_code, 302)
-            self.assertTrue(Appointment.objects.filter(customer__telegram_chat_id="55667788").exists())
-            self.set_scenario_detail("Public booking form created a Telegram-based appointment request.")
+            self.assertTrue(
+                Appointment.objects.filter(customer__telegram_chat_id="55667788").exists()
+            )
+            self.set_scenario_detail(
+                "Public booking form created a Telegram-based appointment request."
+            )
         elif kind == "post-missing-contact":
             response = self.web_client.post(
                 reverse("appointments:public-book"),
@@ -1087,7 +1125,9 @@ def public_page_runner(kind: str):
             )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Provide at least a phone number")
-            self.set_scenario_detail("Public booking form rejected a request with no contact channel.")
+            self.set_scenario_detail(
+                "Public booking form rejected a request with no contact channel."
+            )
         elif kind == "post-whatsapp-without-phone":
             response = self.web_client.post(
                 reverse("appointments:public-book"),
@@ -1103,7 +1143,9 @@ def public_page_runner(kind: str):
             )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "A phone number is required for WhatsApp confirmations.")
-            self.set_scenario_detail("Public booking form rejected a WhatsApp preference without a phone number.")
+            self.set_scenario_detail(
+                "Public booking form rejected a WhatsApp preference without a phone number."
+            )
         elif kind == "post-telegram-without-chat":
             response = self.web_client.post(
                 reverse("appointments:public-book"),
@@ -1118,8 +1160,12 @@ def public_page_runner(kind: str):
                 },
             )
             self.assertEqual(response.status_code, 200)
-            self.assertContains(response, "A Telegram chat ID is required for Telegram confirmations.")
-            self.set_scenario_detail("Public booking form rejected a Telegram preference without a chat ID.")
+            self.assertContains(
+                response, "A Telegram chat ID is required for Telegram confirmations."
+            )
+            self.set_scenario_detail(
+                "Public booking form rejected a Telegram preference without a chat ID."
+            )
         else:
             raise ValueError(f"Unsupported public page scenario: {kind}")
 
@@ -1160,7 +1206,9 @@ def auth_flow_runner(kind: str):
             )
             self.assertEqual(response.status_code, 200)
             self.assertContains(response, "Invalid credentials.")
-            self.set_scenario_detail("Invalid login stayed on the form and showed a validation message.")
+            self.set_scenario_detail(
+                "Invalid login stayed on the form and showed a validation message."
+            )
         elif kind == "forced-password-login":
             self.manager.must_change_password = True
             self.manager.save(update_fields=["must_change_password"])
@@ -1170,7 +1218,9 @@ def auth_flow_runner(kind: str):
             )
             self.assertEqual(response.status_code, 302)
             self.assertIn(reverse("accounts:password_change"), response.url)
-            self.set_scenario_detail("Forced-password-change users were redirected to the password form after login.")
+            self.set_scenario_detail(
+                "Forced-password-change users were redirected to the password form after login."
+            )
         elif kind == "shop-selector-admin":
             self.login_web_as("platform_admin")
             response = self.web_client.get(reverse("accounts:shop_selector"))
@@ -1216,7 +1266,9 @@ def auth_flow_runner(kind: str):
             self.assertEqual(response.status_code, 302)
             self.manager.refresh_from_db()
             self.assertFalse(self.manager.must_change_password)
-            self.set_scenario_detail("Password change cleared the forced-change flag and redirected successfully.")
+            self.set_scenario_detail(
+                "Password change cleared the forced-change flag and redirected successfully."
+            )
         elif kind == "dashboard-redirect-forced-password":
             self.manager.must_change_password = True
             self.manager.save(update_fields=["must_change_password"])
@@ -1224,7 +1276,9 @@ def auth_flow_runner(kind: str):
             response = self.web_client.get(reverse("core:dashboard"))
             self.assertEqual(response.status_code, 302)
             self.assertIn(reverse("accounts:password_change"), response.url)
-            self.set_scenario_detail("Forced-password-change users were redirected away from the dashboard.")
+            self.set_scenario_detail(
+                "Forced-password-change users were redirected away from the dashboard."
+            )
         else:
             raise ValueError(f"Unsupported auth flow scenario: {kind}")
 
@@ -1277,16 +1331,21 @@ def barber_validation_runner(actor_key: str, case_name: str):
         else:
             raise ValueError(case_name)
         response = self.api_client.post("/api/barbers/", payload, format="json")
-        expected_status = 201 if case_name in {
-            "commission-0",
-            "commission-25",
-            "commission-50",
-            "commission-100",
-            "name-other-shop",
-            "code-other-shop",
-            "blank-code",
-            "valid-phone-blank",
-        } else 400
+        expected_status = (
+            201
+            if case_name
+            in {
+                "commission-0",
+                "commission-25",
+                "commission-50",
+                "commission-100",
+                "name-other-shop",
+                "code-other-shop",
+                "blank-code",
+                "valid-phone-blank",
+            }
+            else 400
+        )
         if case_name == "name-other-shop" and actor_key != "platform_admin":
             expected_status = 403
         self.assertEqual(response.status_code, expected_status)
@@ -1333,14 +1392,19 @@ def product_validation_runner(actor_key: str, case_name: str):
         else:
             raise ValueError(case_name)
         response = self.api_client.post("/api/products/", payload, format="json")
-        expected_status = 201 if case_name in {
-            "prices-zero",
-            "prices-small",
-            "prices-standard",
-            "sku-other-shop",
-            "new-sku",
-            "inactive-create",
-        } else 400
+        expected_status = (
+            201
+            if case_name
+            in {
+                "prices-zero",
+                "prices-small",
+                "prices-standard",
+                "sku-other-shop",
+                "new-sku",
+                "inactive-create",
+            }
+            else 400
+        )
         if case_name == "sku-other-shop" and actor_key != "platform_admin":
             expected_status = 403
         self.assertEqual(response.status_code, expected_status)
@@ -1415,7 +1479,10 @@ def customer_validation_runner(actor_key: str, case_name: str):
             "notes-kept",
         }
         expected_status = 201 if case_name in valid_cases else 400
-        if case_name in {"phone-other-shop", "email-other-shop", "telegram-other-shop"} and actor_key != "platform_admin":
+        if (
+            case_name in {"phone-other-shop", "email-other-shop", "telegram-other-shop"}
+            and actor_key != "platform_admin"
+        ):
             expected_status = 403
         self.assertEqual(response.status_code, expected_status)
         self.set_scenario_detail(
@@ -1456,23 +1523,35 @@ def appointment_validation_runner(actor_key: str, case_name: str):
         elif case_name == "barber-other-shop":
             payload["barber"] = self.ensure_barber("shop2", suffix="other-shop-barber").id
         elif case_name == "overlap-start":
-            self.ensure_appointment("shop1", barber=self.barber, start=base_start, duration_minutes=60)
+            self.ensure_appointment(
+                "shop1", barber=self.barber, start=base_start, duration_minutes=60
+            )
             payload["scheduled_start"] = (base_start + timedelta(minutes=30)).isoformat()
         elif case_name == "overlap-middle":
-            self.ensure_appointment("shop1", barber=self.barber, start=base_start, duration_minutes=60)
+            self.ensure_appointment(
+                "shop1", barber=self.barber, start=base_start, duration_minutes=60
+            )
             payload["scheduled_start"] = (base_start + timedelta(minutes=15)).isoformat()
         elif case_name == "overlap-enveloping":
-            self.ensure_appointment("shop1", barber=self.barber, start=base_start, duration_minutes=45)
+            self.ensure_appointment(
+                "shop1", barber=self.barber, start=base_start, duration_minutes=45
+            )
             payload["scheduled_start"] = (base_start - timedelta(minutes=15)).isoformat()
             payload["duration_minutes"] = 90
         elif case_name == "adjacent-before":
-            self.ensure_appointment("shop1", barber=self.barber, start=base_start, duration_minutes=45)
+            self.ensure_appointment(
+                "shop1", barber=self.barber, start=base_start, duration_minutes=45
+            )
             payload["scheduled_start"] = (base_start - timedelta(minutes=45)).isoformat()
         elif case_name == "adjacent-after":
-            self.ensure_appointment("shop1", barber=self.barber, start=base_start, duration_minutes=45)
+            self.ensure_appointment(
+                "shop1", barber=self.barber, start=base_start, duration_minutes=45
+            )
             payload["scheduled_start"] = (base_start + timedelta(minutes=45)).isoformat()
         elif case_name == "same-time-different-barber":
-            self.ensure_appointment("shop1", barber=self.barber, start=base_start, duration_minutes=60)
+            self.ensure_appointment(
+                "shop1", barber=self.barber, start=base_start, duration_minutes=60
+            )
             payload["barber"] = self.ensure_barber("shop1", suffix="second-barber").id
             payload["scheduled_start"] = base_start.isoformat()
         elif case_name == "overlap-with-cancelled-existing":
@@ -1485,7 +1564,9 @@ def appointment_validation_runner(actor_key: str, case_name: str):
             )
             payload["scheduled_start"] = (base_start + timedelta(minutes=30)).isoformat()
         elif case_name == "cancelled-new-overlap":
-            self.ensure_appointment("shop1", barber=self.barber, start=base_start, duration_minutes=60)
+            self.ensure_appointment(
+                "shop1", barber=self.barber, start=base_start, duration_minutes=60
+            )
             payload["status"] = Appointment.Status.CANCELLED
             payload["scheduled_start"] = (base_start + timedelta(minutes=30)).isoformat()
         else:
@@ -1637,7 +1718,9 @@ def sale_validation_runner(actor_key: str, case_name: str):
             self.product.save()
             item.refresh_from_db()
             self.assertEqual(item.unit_price_snapshot, Decimal("15.00"))
-            self.set_scenario_detail("Historical sale snapshots stayed stable after product price changes.")
+            self.set_scenario_detail(
+                "Historical sale snapshots stayed stable after product price changes."
+            )
             return
         elif case_name == "service-qty-4":
             payload["items"][0]["quantity"] = 4
@@ -1741,9 +1824,9 @@ def public_booking_api_runner(case_name: str, shop_key: str):
             "shop": shop.id,
             "customer_name": f"Public {self.unique_token(case_name)}",
             "service_name": "Shape Up",
-            "scheduled_start": (
-                timezone.now() + timedelta(days=2)
-            ).replace(second=0, microsecond=0).isoformat(),
+            "scheduled_start": (timezone.now() + timedelta(days=2))
+            .replace(second=0, microsecond=0)
+            .isoformat(),
             "duration_minutes": 30,
         }
         if case_name == "phone-only":
@@ -1804,7 +1887,10 @@ def filter_form_runner(actor_key: str, case_name: str):
         selector_form = ShopSelectorForm(user=user)
         accessible_shop_count = get_shop_queryset_for_user(user).count()
         if case_name == "barber-limited":
-            self.assertEqual(form.fields["barber"].queryset.count(), Barber.objects.filter(shop=self.shop1).count())
+            self.assertEqual(
+                form.fields["barber"].queryset.count(),
+                Barber.objects.filter(shop=self.shop1).count(),
+            )
         elif case_name == "no-active-shop":
             self.assertEqual(form.fields["barber"].queryset.count(), 0)
         elif case_name in {"manager-shop-queryset", "admin-shop-queryset", "cashier-shop-queryset"}:
@@ -1848,14 +1934,27 @@ def sharing_helper_runner(kind: str):
             self.assertEqual(build_telegram_direct_url("", "Hello"), "")
         elif kind == "availability-message":
             groups = [{"barber": self.barber, "slots": [timezone.now()]}]
-            self.assertIn("current availability", build_availability_message(self.shop1, groups, "https://example.com"))
+            self.assertIn(
+                "current availability",
+                build_availability_message(self.shop1, groups, "https://example.com"),
+            )
         elif kind == "appointment-message":
             appointment = self.ensure_appointment("shop1")
-            self.assertIn("Appointment update", build_appointment_message(appointment, "https://example.com"))
+            self.assertIn(
+                "Appointment update", build_appointment_message(appointment, "https://example.com")
+            )
         elif kind == "shop-contact":
-            self.assertIn("Booking page", build_shop_contact_message(self.shop1, "https://book", "https://avail"))
+            self.assertIn(
+                "Booking page",
+                build_shop_contact_message(self.shop1, "https://book", "https://avail"),
+            )
         elif kind == "availability-message-empty":
-            self.assertIn("Full schedule", build_availability_message(self.shop1, [{"barber": self.barber, "slots": []}], "https://example.com"))
+            self.assertIn(
+                "Full schedule",
+                build_availability_message(
+                    self.shop1, [{"barber": self.barber, "slots": []}], "https://example.com"
+                ),
+            )
         elif kind == "telegram-share-encoded":
             self.assertIn("%20", build_telegram_share_url("Hello world", "https://example.com"))
         elif kind == "whatsapp-encoded":
@@ -1863,13 +1962,26 @@ def sharing_helper_runner(kind: str):
         elif kind == "telegram-direct-encoded":
             self.assertIn("%20", build_telegram_direct_url("@trimhub", "Hello world"))
         elif kind == "shop-contact-greets":
-            self.assertIn(self.shop1.name, build_shop_contact_message(self.shop1, "https://book", "https://avail"))
+            self.assertIn(
+                self.shop1.name,
+                build_shop_contact_message(self.shop1, "https://book", "https://avail"),
+            )
         elif kind == "appointment-message-barber":
             appointment = self.ensure_appointment("shop1")
-            self.assertIn(self.barber.full_name, build_appointment_message(appointment, "https://example.com"))
+            self.assertIn(
+                self.barber.full_name, build_appointment_message(appointment, "https://example.com")
+            )
         elif kind == "availability-message-barber":
-            groups = [{"barber": self.barber, "slots": [timezone.now(), timezone.now() + timedelta(hours=1)]}]
-            self.assertIn(self.barber.full_name, build_availability_message(self.shop1, groups, "https://example.com"))
+            groups = [
+                {
+                    "barber": self.barber,
+                    "slots": [timezone.now(), timezone.now() + timedelta(hours=1)],
+                }
+            ]
+            self.assertIn(
+                self.barber.full_name,
+                build_availability_message(self.shop1, groups, "https://example.com"),
+            )
         elif kind == "telegram-direct-normalized":
             self.assertIn("/trimhub?", build_telegram_direct_url("trimhub", "Book"))
         elif kind == "whatsapp-only-digits":
@@ -1877,13 +1989,22 @@ def sharing_helper_runner(kind: str):
         elif kind == "availability-message-url":
             self.assertIn(
                 "https://example.com/availability",
-                build_availability_message(self.shop1, [{"barber": self.barber, "slots": []}], "https://example.com/availability"),
+                build_availability_message(
+                    self.shop1,
+                    [{"barber": self.barber, "slots": []}],
+                    "https://example.com/availability",
+                ),
             )
         elif kind == "appointment-message-status":
             appointment = self.ensure_appointment("shop1", status=Appointment.Status.CANCELLED)
-            self.assertIn("Cancelled", build_appointment_message(appointment, "https://example.com"))
+            self.assertIn(
+                "Cancelled", build_appointment_message(appointment, "https://example.com")
+            )
         elif kind == "shop-contact-availability-link":
-            self.assertIn("https://avail", build_shop_contact_message(self.shop1, "https://book", "https://avail"))
+            self.assertIn(
+                "https://avail",
+                build_shop_contact_message(self.shop1, "https://book", "https://avail"),
+            )
         elif kind == "whatsapp-url-strips-symbols":
             self.assertIn("wa.me/265999000010", build_whatsapp_url("+265-999-000-010", "Hello"))
         elif kind == "telegram-share-without-url":
@@ -1909,9 +2030,15 @@ def access_service_runner(user_key: str, case_name: str):
             expected = 2 if user_key == "platform_admin" else 1
             self.assertEqual(queryset.count(), expected)
         elif case_name == "can-access-shop1":
-            self.assertEqual(user_can_access_shop(user, self.shop1), user_key in {"platform_admin", "manager", "cashier"})
+            self.assertEqual(
+                user_can_access_shop(user, self.shop1),
+                user_key in {"platform_admin", "manager", "cashier"},
+            )
         elif case_name == "can-access-shop2":
-            self.assertEqual(user_can_access_shop(user, self.shop2), user_key in {"platform_admin", "other_manager"})
+            self.assertEqual(
+                user_can_access_shop(user, self.shop2),
+                user_key in {"platform_admin", "other_manager"},
+            )
         elif case_name == "customer-queryset":
             self.ensure_customer("shop2", suffix="service-customer")
             queryset = customer_queryset_for_user(user)
@@ -2049,7 +2176,9 @@ def booking_service_runner(case_name: str):
                 phone="555-6464",
                 barber=self.barber,
                 service_name="Haircut",
-                scheduled_start=(timezone.now() + timedelta(days=1)).replace(second=0, microsecond=0),
+                scheduled_start=(timezone.now() + timedelta(days=1)).replace(
+                    second=0, microsecond=0
+                ),
                 duration_minutes=30,
                 notes="Public service create",
             )
@@ -2060,7 +2189,9 @@ def booking_service_runner(case_name: str):
                 customer_name="Public No Barber",
                 phone="555-6565",
                 service_name="Haircut",
-                scheduled_start=(timezone.now() + timedelta(days=1)).replace(second=0, microsecond=0),
+                scheduled_start=(timezone.now() + timedelta(days=1)).replace(
+                    second=0, microsecond=0
+                ),
                 duration_minutes=30,
             )
             self.assertIsNone(appointment.barber)
@@ -2071,7 +2202,9 @@ def booking_service_runner(case_name: str):
                 telegram_chat_id="929292",
                 preferred_confirmation_channel=Customer.ConfirmationChannel.TELEGRAM,
                 service_name="Haircut",
-                scheduled_start=(timezone.now() + timedelta(days=1)).replace(second=0, microsecond=0),
+                scheduled_start=(timezone.now() + timedelta(days=1)).replace(
+                    second=0, microsecond=0
+                ),
                 duration_minutes=30,
             )
             self.assertEqual(
@@ -2133,10 +2266,14 @@ def availability_service_runner(case_name: str):
             groups = available_slots_for_shop(self.shop1, days=3, per_barber_limit=2)
             self.assertTrue(all(len(group["slots"]) <= 2 for group in groups))
         elif case_name == "duration-90":
-            groups = available_slots_for_shop(self.shop1, days=2, per_barber_limit=4, duration_minutes=90)
+            groups = available_slots_for_shop(
+                self.shop1, days=2, per_barber_limit=4, duration_minutes=90
+            )
             self.assertTrue(groups)
         elif case_name == "slot-minutes-60":
-            groups = available_slots_for_shop(self.shop1, days=2, per_barber_limit=4, slot_minutes=60)
+            groups = available_slots_for_shop(
+                self.shop1, days=2, per_barber_limit=4, slot_minutes=60
+            )
             self.assertTrue(groups)
         elif case_name == "open-hour-10":
             groups = available_slots_for_shop(self.shop1, days=2, per_barber_limit=4, open_hour=10)
@@ -2173,72 +2310,113 @@ def notification_service_runner(case_name: str):
             self.assertEqual(result.status, AppointmentNotification.Status.SKIPPED)
         elif case_name == "whatsapp-success":
             with override_settings(WHATSAPP_ACCESS_TOKEN="token", WHATSAPP_PHONE_NUMBER_ID="123"):
-                with patch("apps.appointments.notifications._post_json", return_value={"messages": [{"id": "wamid.1"}]}):
+                with patch(
+                    "apps.appointments.notifications._post_json",
+                    return_value={"messages": [{"id": "wamid.1"}]},
+                ):
                     result = send_booking_confirmation(appointment)
             self.assertTrue(result.sent)
             self.assertEqual(result.channel, AppointmentNotification.Channel.WHATSAPP)
         elif case_name == "telegram-success":
             appointment.customer.phone = ""
             appointment.customer.telegram_chat_id = "771122"
-            appointment.customer.preferred_confirmation_channel = Customer.ConfirmationChannel.TELEGRAM
-            appointment.customer.save(update_fields=["phone", "telegram_chat_id", "preferred_confirmation_channel"])
+            appointment.customer.preferred_confirmation_channel = (
+                Customer.ConfirmationChannel.TELEGRAM
+            )
+            appointment.customer.save(
+                update_fields=["phone", "telegram_chat_id", "preferred_confirmation_channel"]
+            )
             with override_settings(TELEGRAM_BOT_TOKEN="token"):
-                with patch("apps.appointments.notifications._post_json", return_value={"ok": True, "result": {"message_id": 777}}):
+                with patch(
+                    "apps.appointments.notifications._post_json",
+                    return_value={"ok": True, "result": {"message_id": 777}},
+                ):
                     result = send_booking_confirmation(appointment)
             self.assertTrue(result.sent)
             self.assertEqual(result.channel, AppointmentNotification.Channel.TELEGRAM)
         elif case_name == "whatsapp-failure":
             with override_settings(WHATSAPP_ACCESS_TOKEN="token", WHATSAPP_PHONE_NUMBER_ID="123"):
-                with patch("apps.appointments.notifications._post_json", side_effect=Exception("fail")):
+                with patch(
+                    "apps.appointments.notifications._post_json", side_effect=Exception("fail")
+                ):
                     with self.assertRaises(Exception):
                         send_booking_confirmation(appointment)
-            self.set_scenario_detail("Notification service propagated an unexpected provider exception.")
+            self.set_scenario_detail(
+                "Notification service propagated an unexpected provider exception."
+            )
             return
         elif case_name == "telegram-fallback":
             appointment.customer.telegram_chat_id = "881122"
             appointment.customer.preferred_confirmation_channel = Customer.ConfirmationChannel.AUTO
-            appointment.customer.save(update_fields=["telegram_chat_id", "preferred_confirmation_channel"])
+            appointment.customer.save(
+                update_fields=["telegram_chat_id", "preferred_confirmation_channel"]
+            )
             with override_settings(TELEGRAM_BOT_TOKEN="token"):
-                with patch("apps.appointments.notifications._post_json", return_value={"ok": True, "result": {"message_id": 888}}):
+                with patch(
+                    "apps.appointments.notifications._post_json",
+                    return_value={"ok": True, "result": {"message_id": 888}},
+                ):
                     result = send_booking_confirmation(appointment)
             self.assertEqual(result.channel, AppointmentNotification.Channel.TELEGRAM)
         elif case_name == "whatsapp-preferred-skip":
             appointment.customer.phone = ""
-            appointment.customer.preferred_confirmation_channel = Customer.ConfirmationChannel.WHATSAPP
+            appointment.customer.preferred_confirmation_channel = (
+                Customer.ConfirmationChannel.WHATSAPP
+            )
             appointment.customer.save(update_fields=["phone", "preferred_confirmation_channel"])
             result = send_booking_confirmation(appointment)
             self.assertEqual(result.status, AppointmentNotification.Status.SKIPPED)
         elif case_name == "telegram-preferred-skip":
             appointment.customer.telegram_chat_id = ""
             appointment.customer.phone = ""
-            appointment.customer.preferred_confirmation_channel = Customer.ConfirmationChannel.TELEGRAM
-            appointment.customer.save(update_fields=["telegram_chat_id", "phone", "preferred_confirmation_channel"])
+            appointment.customer.preferred_confirmation_channel = (
+                Customer.ConfirmationChannel.TELEGRAM
+            )
+            appointment.customer.save(
+                update_fields=["telegram_chat_id", "phone", "preferred_confirmation_channel"]
+            )
             result = send_booking_confirmation(appointment)
             self.assertEqual(result.status, AppointmentNotification.Status.SKIPPED)
         elif case_name == "auto-prefers-whatsapp":
             with override_settings(WHATSAPP_ACCESS_TOKEN="token", WHATSAPP_PHONE_NUMBER_ID="123"):
-                with patch("apps.appointments.notifications._post_json", return_value={"messages": [{"id": "wamid.auto"}]}):
+                with patch(
+                    "apps.appointments.notifications._post_json",
+                    return_value={"messages": [{"id": "wamid.auto"}]},
+                ):
                     result = send_booking_confirmation(appointment)
             self.assertEqual(result.channel, AppointmentNotification.Channel.WHATSAPP)
         elif case_name == "auto-falls-back-telegram":
             appointment.customer.telegram_chat_id = "919191"
             appointment.customer.save(update_fields=["telegram_chat_id"])
             with override_settings(TELEGRAM_BOT_TOKEN="token"):
-                with patch("apps.appointments.notifications._post_json", return_value={"ok": True, "result": {"message_id": 919}}):
+                with patch(
+                    "apps.appointments.notifications._post_json",
+                    return_value={"ok": True, "result": {"message_id": 919}},
+                ):
                     result = send_booking_confirmation(appointment)
             self.assertEqual(result.channel, AppointmentNotification.Channel.TELEGRAM)
         elif case_name == "whatsapp-log-created":
             with override_settings(WHATSAPP_ACCESS_TOKEN="token", WHATSAPP_PHONE_NUMBER_ID="123"):
-                with patch("apps.appointments.notifications._post_json", return_value={"messages": [{"id": "wamid.log"}]}):
+                with patch(
+                    "apps.appointments.notifications._post_json",
+                    return_value={"messages": [{"id": "wamid.log"}]},
+                ):
                     result = send_booking_confirmation(appointment)
             self.assertIsNotNone(result.log_id)
         elif case_name == "telegram-log-created":
             appointment.customer.phone = ""
             appointment.customer.telegram_chat_id = "717171"
-            appointment.customer.preferred_confirmation_channel = Customer.ConfirmationChannel.TELEGRAM
-            appointment.customer.save(update_fields=["phone", "telegram_chat_id", "preferred_confirmation_channel"])
+            appointment.customer.preferred_confirmation_channel = (
+                Customer.ConfirmationChannel.TELEGRAM
+            )
+            appointment.customer.save(
+                update_fields=["phone", "telegram_chat_id", "preferred_confirmation_channel"]
+            )
             with override_settings(TELEGRAM_BOT_TOKEN="token"):
-                with patch("apps.appointments.notifications._post_json", return_value={"ok": True, "result": {"message_id": 717}}):
+                with patch(
+                    "apps.appointments.notifications._post_json",
+                    return_value={"ok": True, "result": {"message_id": 717}},
+                ):
                     result = send_booking_confirmation(appointment)
             self.assertIsNotNone(result.log_id)
         else:
@@ -2254,7 +2432,9 @@ def reporting_runner(user_key: str, case_name: str):
         user = self.actor(user_key)
         own_shop = self.shop_for_key(self.shop_key_for(user_key, "own"))
         if case_name == "dashboard":
-            summary = build_dashboard_metrics(user, None if user_key == "platform_admin" else own_shop)
+            summary = build_dashboard_metrics(
+                user, None if user_key == "platform_admin" else own_shop
+            )
             self.assertIn("today", summary)
         elif case_name == "daily":
             summary = daily_sales_summary(user, None if user_key == "platform_admin" else own_shop)
@@ -2263,7 +2443,9 @@ def reporting_runner(user_key: str, case_name: str):
             summary = weekly_sales_summary(user, None if user_key == "platform_admin" else own_shop)
             self.assertGreaterEqual(summary["total_sales"], Decimal("0.00"))
         elif case_name == "monthly":
-            summary = monthly_sales_summary(user, None if user_key == "platform_admin" else own_shop)
+            summary = monthly_sales_summary(
+                user, None if user_key == "platform_admin" else own_shop
+            )
             self.assertGreaterEqual(summary["total_sales"], Decimal("0.00"))
         elif case_name == "top-barbers":
             summary = top_barbers_summary(user, None if user_key == "platform_admin" else own_shop)
@@ -2281,13 +2463,19 @@ def reporting_runner(user_key: str, case_name: str):
             summary = shop_comparison_summary(user)
             self.assertTrue(summary)
         elif case_name == "product-performance":
-            summary = product_performance_summary(user, None if user_key == "platform_admin" else own_shop)
+            summary = product_performance_summary(
+                user, None if user_key == "platform_admin" else own_shop
+            )
             self.assertTrue(summary)
         elif case_name == "appointment-metrics":
-            summary = dashboard_appointment_metrics(user, None if user_key == "platform_admin" else own_shop)
+            summary = dashboard_appointment_metrics(
+                user, None if user_key == "platform_admin" else own_shop
+            )
             self.assertIn("today_total", summary)
         elif case_name == "upcoming":
-            summary = upcoming_appointments_for_user(user, None if user_key == "platform_admin" else own_shop)
+            summary = upcoming_appointments_for_user(
+                user, None if user_key == "platform_admin" else own_shop
+            )
             self.assertTrue(summary)
         else:
             raise ValueError(case_name)
@@ -2312,21 +2500,31 @@ def audit_runner(user_key: str, case_name: str):
                 self.assertGreaterEqual(visible.count(), 1)
         elif case_name == "barber-create":
             barber = self.ensure_barber("shop1", suffix="audit-create")
-            self.assertTrue(AuditLog.objects.filter(entity_type="Barber", entity_id=str(barber.id), event_type="create").exists())
+            self.assertTrue(
+                AuditLog.objects.filter(
+                    entity_type="Barber", entity_id=str(barber.id), event_type="create"
+                ).exists()
+            )
         elif case_name == "product-update":
             product = self.ensure_product("shop1", suffix="audit-update")
             product.name = "Updated Product"
             product.save()
-            self.assertTrue(AuditLog.objects.filter(entity_type="Product", entity_id=str(product.id), event_type="update").exists())
+            self.assertTrue(
+                AuditLog.objects.filter(
+                    entity_type="Product", entity_id=str(product.id), event_type="update"
+                ).exists()
+            )
         elif case_name == "customer-delete":
             customer = self.ensure_customer("shop1", suffix="audit-delete")
             customer.soft_delete(user=self.manager)
-            self.assertTrue(AuditLog.objects.filter(entity_type="Customer", entity_id=str(customer.id), event_type="delete").exists())
+            self.assertTrue(
+                AuditLog.objects.filter(
+                    entity_type="Customer", entity_id=str(customer.id), event_type="delete"
+                ).exists()
+            )
         else:
             raise ValueError(case_name)
-        self.set_scenario_detail(
-            f"Audit case '{case_name}' passed for {USER_LABELS[user_key]}."
-        )
+        self.set_scenario_detail(f"Audit case '{case_name}' passed for {USER_LABELS[user_key]}.")
 
     return runner
 
@@ -2408,8 +2606,22 @@ def public_form_serializer_runner(case_name: str):
 def build_scenarios() -> list[Scenario]:
     scenarios: list[Scenario] = []
 
-    def add(case_cls: type, category: str, title: str, rationale: str, runner: Callable[[BaseAppTestCase], None]) -> None:
-        scenarios.append(Scenario(case_cls=case_cls, category=category, title=title, rationale=rationale, runner=runner))
+    def add(
+        case_cls: type,
+        category: str,
+        title: str,
+        rationale: str,
+        runner: Callable[[BaseAppTestCase], None],
+    ) -> None:
+        scenarios.append(
+            Scenario(
+                case_cls=case_cls,
+                category=category,
+                title=title,
+                rationale=rationale,
+                runner=runner,
+            )
+        )
 
     for resource in API_RESOURCE_CONFIG:
         for user_key in USER_ATTRIBUTE_MAP:
@@ -2484,7 +2696,15 @@ def build_scenarios() -> list[Scenario]:
                 web_create_runner(page_name, user_key, expected),
             )
 
-    for resource in ("shops", "barbers", "products", "customers", "appointments", "sales", "expenses"):
+    for resource in (
+        "shops",
+        "barbers",
+        "products",
+        "customers",
+        "appointments",
+        "sales",
+        "expenses",
+    ):
         for user_key in USER_ATTRIBUTE_MAP:
             for scope in ("own", "other"):
                 add(
@@ -2502,7 +2722,7 @@ def build_scenarios() -> list[Scenario]:
                     WebMatrixCase,
                     "Web Access",
                     f"{resource} delete {scope} for {USER_LABELS[user_key]}",
-                    f"Confirm delete posts either archive the record or block the operation based on role and shop access.",
+                    "Confirm delete posts either archive the record or block the operation based on role and shop access.",
                     web_delete_runner(resource, user_key, scope),
                 )
 
@@ -2932,7 +3152,9 @@ def build_scenarios() -> list[Scenario]:
 SCENARIOS = build_scenarios()
 
 
-def scenario_result_for_test(result: unittest.TextTestResult, test: unittest.TestCase, status: str, err: str = "") -> None:
+def scenario_result_for_test(
+    result: unittest.TextTestResult, test: unittest.TestCase, status: str, err: str = ""
+) -> None:
     method = getattr(test, test._testMethodName)
     scenario = getattr(method, "_scenario")
     detail = getattr(test, "_scenario_detail", "") or summarize_exception(err) or status
@@ -3044,7 +3266,9 @@ class PdfReportRenderer:
         self.commands = []
         self.page_number += 1
         self.current_y = PAGE_HEIGHT - MARGIN
-        self.commands.append(text_command(REPORT_TITLE, MARGIN, self.current_y, font="F2", size=TITLE_FONT_SIZE))
+        self.commands.append(
+            text_command(REPORT_TITLE, MARGIN, self.current_y, font="F2", size=TITLE_FONT_SIZE)
+        )
         self.current_y -= TITLE_LINE_HEIGHT
         self.commands.append(
             text_command(
@@ -3055,14 +3279,24 @@ class PdfReportRenderer:
             )
         )
         self.current_y -= SMALL_LINE_HEIGHT
-        self.commands.append(line_command(MARGIN, self.current_y, PAGE_WIDTH - MARGIN, self.current_y))
+        self.commands.append(
+            line_command(MARGIN, self.current_y, PAGE_WIDTH - MARGIN, self.current_y)
+        )
         self.current_y -= BODY_LINE_HEIGHT
 
     def ensure_space(self, lines: int = 1, *, line_height: int = BODY_LINE_HEIGHT) -> None:
         if self.current_y - (lines * line_height) < MARGIN:
             self.new_page()
 
-    def add_text(self, text: str, *, size: int = BODY_FONT_SIZE, indent: int = 0, font: str = "F1", after: int = 0) -> None:
+    def add_text(
+        self,
+        text: str,
+        *,
+        size: int = BODY_FONT_SIZE,
+        indent: int = 0,
+        font: str = "F1",
+        after: int = 0,
+    ) -> None:
         width = char_capacity(CONTENT_WIDTH - indent, font_size=size)
         wrapped = textwrap.wrap(
             ascii_text(text),
@@ -3131,9 +3365,17 @@ def write_pdf(output_path: Path, pages: list[str]) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run the 1000-scenario app matrix and emit a PDF report.")
-    parser.add_argument("--markdown-output", default=str(DEFAULT_MARKDOWN), help="Where to write the markdown report.")
-    parser.add_argument("--pdf-output", default=str(DEFAULT_PDF), help="Where to write the PDF report.")
+    parser = argparse.ArgumentParser(
+        description="Run the 1000-scenario app matrix and emit a PDF report."
+    )
+    parser.add_argument(
+        "--markdown-output",
+        default=str(DEFAULT_MARKDOWN),
+        help="Where to write the markdown report.",
+    )
+    parser.add_argument(
+        "--pdf-output", default=str(DEFAULT_PDF), help="Where to write the PDF report."
+    )
     parser.add_argument("--verbosity", type=int, default=1, help="Unit test runner verbosity.")
     return parser.parse_args()
 
