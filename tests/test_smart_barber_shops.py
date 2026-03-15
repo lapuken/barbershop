@@ -6,6 +6,7 @@ import tempfile
 from datetime import datetime, timedelta
 from decimal import Decimal
 from unittest.mock import patch
+from urllib.parse import urlencode
 from zoneinfo import ZoneInfo
 
 from django.contrib.auth import get_user_model
@@ -235,16 +236,17 @@ class AuthAndAuthorizationTests(BaseAppTestCase):
     def test_login_redirects_to_password_change_when_required(self):
         self.manager.must_change_password = True
         self.manager.save(update_fields=["must_change_password"])
+        next_url = reverse("reports:dashboard")
 
         response = self.web_client.post(
-            f"{reverse('accounts:login')}?next={reverse('reports:dashboard')}",
+            f"{reverse('accounts:login')}?next={next_url}",
             {"username": "manager", "password": "StrongPass12345!"},
         )
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            f"{reverse('accounts:password_change')}?next={reverse('reports:dashboard')}",
+            f"{reverse('accounts:password_change')}?{urlencode({'next': next_url})}",
         )
 
     def test_locked_user_is_redirected_until_password_changes(self):
@@ -257,7 +259,7 @@ class AuthAndAuthorizationTests(BaseAppTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(
             response.url,
-            f"{reverse('accounts:password_change')}?next={reverse('core:dashboard')}",
+            f"{reverse('accounts:password_change')}?{urlencode({'next': reverse('core:dashboard')})}",
         )
 
     def test_password_change_clears_flag_and_redirects_to_original_target(self):
@@ -320,23 +322,24 @@ class AuthAndAuthorizationTests(BaseAppTestCase):
         response = self.api_client.delete(f"/api/expenses/{expense.id}/")
         self.assertEqual(response.status_code, 403)
 
-    def test_cashier_without_active_shop_hides_shop_scoped_navigation(self):
+    def test_cashier_without_selected_shop_auto_selects_first_accessible_shop(self):
         self.web_client.force_login(self.cashier)
 
         response = self.web_client.get(reverse("core:dashboard"))
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(self.web_client.session["active_shop_id"], self.shop1.id)
         self.assertContains(response, reverse("accounts:shop_selector"))
         self.assertContains(response, reverse("reports:dashboard"))
         self.assertContains(response, reverse("audit:list"))
-        self.assertNotContains(response, reverse("appointments:customers"))
-        self.assertNotContains(response, reverse("appointments:list"))
-        self.assertNotContains(response, reverse("barbers:list"))
-        self.assertNotContains(response, reverse("products:list"))
-        self.assertNotContains(response, reverse("sales:list"))
-        self.assertNotContains(response, reverse("expenses:list"))
-        self.assertNotContains(response, reverse("appointments:create"))
-        self.assertNotContains(response, reverse("sales:create"))
+        self.assertContains(response, reverse("appointments:customers"))
+        self.assertContains(response, reverse("appointments:list"))
+        self.assertContains(response, reverse("barbers:list"))
+        self.assertContains(response, reverse("products:list"))
+        self.assertContains(response, reverse("sales:list"))
+        self.assertContains(response, reverse("expenses:list"))
+        self.assertContains(response, reverse("appointments:create"))
+        self.assertContains(response, reverse("sales:create"))
 
     def test_cashier_sees_only_allowed_page_actions(self):
         self.login_session(self.cashier)
@@ -461,6 +464,16 @@ class ProductTests(BaseAppTestCase):
             "/api/sales/", self.sale_payload(product=self.inactive_product), format="json"
         )
         self.assertEqual(response.status_code, 400)
+
+    def test_sale_item_quantity_must_be_positive(self):
+        self.login_api(self.manager)
+        payload = self.sale_payload()
+        payload["items"][0]["quantity"] = 0
+
+        response = self.api_client.post("/api/sales/", payload, format="json")
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("quantity", response.json()["items"][0])
 
 
 class MessagingAndAvailabilityTests(BaseAppTestCase):
